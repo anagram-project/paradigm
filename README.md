@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PARADIGM
 
-## Getting Started
+**P**elaksanaan **A**nggaran Performance & **R**isk **A**ction **D**igitalized Management — aplikasi internal untuk mengoordinasikan kewajiban kinerja pegawai di Direktorat Pelaksanaan Anggaran, DJPb.
 
-First, run the development server:
+Dibangun dengan [Next.js](https://nextjs.org) (App Router) + JavaScript polos, tanpa dependensi UI framework tambahan — cocok sebagai sandbox belajar coding sekaligus fondasi aplikasi nyata.
+
+## Menjalankan di komputer lokal
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka [http://localhost:3000](http://localhost:3000) — akan langsung diarahkan ke halaman Login, lalu ke `/dashboard` setelah menekan tombol **Masuk** (saat ini belum terhubung ke sistem autentikasi sungguhan).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Struktur proyek
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+  layout.js              # Layout akar aplikasi
+  globals.css            # Variabel warna & reset gaya global
+  page.js                # Halaman Login ("/")
+  login.module.css
+  dashboard/
+    layout.js            # Shell dashboard: sidebar + header (dipakai semua halaman dashboard)
+    layout.module.css
+    page.js               # Halaman Home ("/dashboard") — banner, carousel, statistik, timeline
+    page.module.css
+    buat-ipr/page.js
+    koreksi-nilai/page.js
+    kualitas-iku/page.js
+    pegawai-teladan/page.js
+    timeline/page.js
+    pengaturan/page.js     # Semua masih berupa halaman placeholder
+    _components/
+      Placeholder.js       # Komponen placeholder yang dipakai halaman-halaman di atas
+public/
+  images/
+    login-bg.png           # Background halaman Login
+    pegawai-teladan.png    # Gambar slide carousel "Pegawai Teladan"
+```
 
-## Learn More
+## Palet warna
 
-To learn more about Next.js, take a look at the following resources:
+| Warna | Hex | Fungsi |
+|---|---|---|
+| Deep Navy Blue | `#062455` | Teks utama, border, siluet |
+| Cobalt Blue | `#073F97` | Warna utama |
+| Azure Blue | `#125DD8` | Aksen primer / status aktif |
+| Brilliant Sky Blue | `#2D88F0` | Highlight & elemen interaktif |
+| Ice Sky Blue | `#A3D1FB` | Highlight terang / background |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Didefinisikan sebagai CSS custom properties di `app/globals.css` (`--navy`, `--cobalt`, `--azure`, `--sky`, `--ice`, dst).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Rencana pengembangan berikutnya
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Sambungkan tiap menu placeholder (`Buat IPR`, `Manajemen Koreksi Nilai`, dst.) ke fitur sungguhan.
+- Hubungkan data ke Google Sheets sebagai sumber data ("database"), lewat Google Sheets API dengan service account.
+- Tambahkan autentikasi (mis. Google OAuth) menggantikan form login statis saat ini.
+- Deploy ke Vercel, terhubung ke repository GitHub agar setiap `git push` otomatis men-deploy versi terbaru.
