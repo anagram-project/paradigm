@@ -36,12 +36,13 @@ export async function POST(request) {
     const token = await createSessionToken({
       nip: user.nip,
       nama: user.nama,
+      jabatan: user.jabatan,
       role: user.role,
     });
 
     const response = NextResponse.json({
       ok: true,
-      user: { nip: user.nip, nama: user.nama, role: user.role },
+      user: { nip: user.nip, nama: user.nama, jabatan: user.jabatan, role: user.role },
     });
 
     response.cookies.set(SESSION_COOKIE_NAME, token, SESSION_COOKIE_OPTIONS);

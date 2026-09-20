@@ -53,9 +53,7 @@ export default function LoginPage() {
       <div className={styles.navbar}>
         <div className={styles.brand}>
           <div className={styles.brandMark}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FAFAFA" strokeWidth="2">
-              <path d="M3 12l9-9 9 9M5 10v10h14V10" />
-            </svg>
+            <Image src="/images/logo.png" alt="Logo PARADIGM" width={36} height={36} />
           </div>
           <span className={styles.brandName}>PARADIGM</span>
         </div>

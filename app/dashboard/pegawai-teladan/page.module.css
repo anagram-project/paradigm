@@ -1,0 +1,105 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Carousel poster */
+.carousel {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 1;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+}
+
+.carouselSlide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease;
+}
+
+.carouselSlideActive {
+  opacity: 1;
+  visibility: visible;
+}
+
+.carouselImage {
+  /* "contain" dipakai supaya poster apa pun rasionya selalu tampil utuh,
+     tidak pernah terpotong — beda poster kadang beda sedikit rasionya. */
+  object-fit: contain;
+  object-position: center;
+}
+
+.carouselArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(6, 36, 85, 0.45);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  z-index: 2;
+}
+
+.carouselArrowLeft {
+  left: 14px;
+}
+
+.carouselArrowRight {
+  right: 14px;
+}
+
+.carouselDots {
+  position: absolute;
+  bottom: 14px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  z-index: 2;
+}
+
+.dot {
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: rgba(6, 36, 85, 0.3);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.dotActive {
+  width: 20px;
+  height: 6px;
+  border-radius: 4px;
+  background: var(--cobalt);
+}
+
+.noticeBox {
+  align-self: flex-start;
+  background: var(--cobalt);
+  color: var(--white);
+  border-radius: 14px;
+  padding: 20px 34px;
+  text-align: center;
+}
+
+.noticeBox p {
+  margin: 0;
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1.7;
+}
