@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import styles from "./layout.module.css";
 
 const NAV_ITEMS = [
@@ -92,6 +92,12 @@ function NavLink({ item, pathname }) {
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/");
+  }
 
   return (
     <div className={styles.shell}>
@@ -148,6 +154,19 @@ export default function DashboardLayout({ children }) {
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </div>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              aria-label="Keluar"
+              className={styles.logoutButton}
+              title="Keluar"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5F7699" strokeWidth="2">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                <path d="M16 17l5-5-5-5M21 12H9" />
+              </svg>
+            </button>
           </div>
         </header>
 

@@ -176,6 +176,16 @@
   font-weight: 700;
 }
 
+.errorText {
+  margin: -6px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #c0392b;
+  background: rgba(192, 57, 43, 0.08);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
 .submitButton {
   margin-top: 2px;
   padding: 13px;

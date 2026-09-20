@@ -7,21 +7,36 @@ import styles from "./login.module.css";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [nip, setNip] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
+    setErrorMessage("");
     setIsSubmitting(true);
 
-    // TODO: ganti dengan pemanggilan API sungguhan (mis. verifikasi
-    // email lewat Google Sheets "Users" atau Google OAuth) sebelum
-    // mengarahkan pengguna ke dashboard.
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nip, password }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMessage(data.error || "Email atau kata sandi salah.");
+        setIsSubmitting(false);
+        return;
+      }
+
       router.push("/dashboard");
-    }, 400);
+    } catch (error) {
+      setErrorMessage("Tidak bisa terhubung ke server. Coba lagi.");
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -61,19 +76,22 @@ export default function LoginPage() {
 
           <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.field}>
-              <label htmlFor="email">Email</label>
+              <label htmlFor="nip">NIP</label>
               <div className={styles.fieldRow}>
                 <input
-                  id="email"
-                  type="email"
+                  id="nip"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="username"
                   required
-                  placeholder="nama@kemenkeu.go.id"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Masukkan NIP Anda"
+                  value={nip}
+                  onChange={(e) => setNip(e.target.value)}
                 />
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#67BAF4" strokeWidth="2">
-                  <rect x="2" y="4" width="20" height="16" rx="2" />
-                  <path d="M22 6l-10 7L2 6" />
+                  <rect x="3" y="4" width="18" height="16" rx="2" />
+                  <circle cx="9" cy="10" r="2" />
+                  <path d="M7 16c0-1.7 1.3-3 4.5-3s2.5 1.3 2.5 3M14 8h4M14 12h4" />
                 </svg>
               </div>
             </div>
@@ -109,6 +127,8 @@ export default function LoginPage() {
                 Lupa Kata Sandi?
               </a>
             </div>
+
+            {errorMessage && <p className={styles.errorText}>{errorMessage}</p>}
 
             <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
               {isSubmitting ? "Memproses..." : "Masuk"}

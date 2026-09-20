@@ -186,6 +186,21 @@
   color: var(--muted);
 }
 
+.logoutButton {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoutButton:hover {
+  background: rgba(6, 36, 85, 0.06);
+}
+
 .content {
   flex-grow: 1;
   padding: 28px 32px;
