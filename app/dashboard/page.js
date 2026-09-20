@@ -1,5 +1,7 @@
 import { getSessionUser } from "@/lib/auth";
 import Carousel from "./Carousel";
+import MonitoringKoreksiDashboard from "./MonitoringKoreksiDashboard";
+import ReminderDeadlineDashboard from "./ReminderDeadlineDashboard";
 import styles from "./page.module.css";
 
 // Data contoh — nanti diganti dengan data asli dari Google Sheets.
@@ -51,21 +53,20 @@ export default async function DashboardHomePage() {
 
   return (
     <>
-      <div className={styles.welcomeBanner}>
-        <div>
-          <div className={styles.welcomeTitle}>Selamat datang, {namaDepan}!</div>
-          <div className={styles.welcomeSubtitle}>
-            Pantau dan koordinasikan kewajiban kinerja pegawai Direktorat Pelaksanaan Anggaran di satu tempat.
-          </div>
-        </div>
-        <div className={styles.welcomeIcon}>
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#A3D1FB" strokeWidth="2">
-            <path d="M4 19V10M10 19V4M16 19v-7M22 19H2" />
-          </svg>
-        </div>
+      <div className={styles.topWelcomeBar}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A3D1FB" strokeWidth="2" style={{ flexShrink: 0 }}>
+          <path d="M3 11l18-5v12L3 14v-3z" />
+          <path d="M7 14v5a2 2 0 002 2h1" />
+        </svg>
+        <span className={styles.topWelcomeText}>Selamat datang, {namaDepan}!</span>
       </div>
 
       <Carousel />
+
+      <div className={styles.dashboardsRow}>
+        <MonitoringKoreksiDashboard />
+        <ReminderDeadlineDashboard />
+      </div>
 
       <div className={styles.statGrid}>
         {STAT_CARDS.map((card) => (

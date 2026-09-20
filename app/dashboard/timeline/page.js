@@ -1,10 +1,17 @@
-import Placeholder from "../_components/Placeholder";
+import PeriodeSelector from "./PeriodeSelector";
+import ReminderDeadlineDashboard from "../ReminderDeadlineDashboard";
+import TimelineManajemenKinerjaCard from "../TimelineManajemenKinerjaCard";
+import styles from "./page.module.css";
 
 export default function TimelinePage() {
   return (
-    <Placeholder
-      title="Timeline Kinerja Triwulanan"
-      description="Rincian lini masa capaian kinerja per triwulan akan ditambahkan di sini."
-    />
+    <div className={styles.wrap}>
+      <PeriodeSelector />
+
+      <div className={styles.timelineRow}>
+        <ReminderDeadlineDashboard title="Timeline Evaluasi Kinerja" />
+        <TimelineManajemenKinerjaCard />
+      </div>
+    </div>
   );
 }

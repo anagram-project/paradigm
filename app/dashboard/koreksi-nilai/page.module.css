@@ -286,6 +286,29 @@
   cursor: wait;
 }
 
+.deleteButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #FEE2E2;
+  color: #DC2626;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.deleteButton:hover {
+  background: #FCA5A5;
+}
+
+.deleteButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .hiddenFileInput {
   display: none;
 }

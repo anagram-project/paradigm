@@ -50,6 +50,7 @@ export default function KoreksiNilaiPage() {
   const [editingFaktor, setEditingFaktor] = useState({});
   const [savingFaktor, setSavingFaktor] = useState({});
   const [uploadingKey, setUploadingKey] = useState(null);
+  const [deletingKey, setDeletingKey] = useState(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState(null); // { type: 'success' | 'error', text }
 
@@ -166,6 +167,38 @@ export default function KoreksiNilaiPage() {
     }
   }
 
+  async function handleDelete(faktorId, nomor) {
+    const key = `${faktorId}-${nomor}`;
+    const entry = entries[key];
+    if (!entry?.judul && !entry?.linkFile) return; // slot sudah kosong, tidak ada yang dihapus
+
+    const konfirmasi = window.confirm(
+      `Hapus Bukti Dukung & No ND ${nomor} pada Faktor ${faktorId}? Judul dan file naskah dinas yang sudah diunggah akan dihapus permanen.`
+    );
+    if (!konfirmasi) return;
+
+    setDeletingKey(key);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/koreksi-nilai/entry", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ periode, faktor: faktorId, nomorUrut: nomor }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error || "Gagal menghapus." });
+        return;
+      }
+      setEntries((prev) => ({ ...prev, [key]: { judul: "", linkFile: "", namaFile: "" } }));
+      setMessage({ type: "success", text: `Bukti Dukung & No ND ${nomor} pada Faktor ${faktorId} berhasil dihapus.` });
+    } catch {
+      setMessage({ type: "error", text: "Tidak bisa terhubung ke server." });
+    } finally {
+      setDeletingKey(null);
+    }
+  }
+
   return (
     <div className={styles.wrap}>
       <div className={styles.topRow}>
@@ -208,6 +241,7 @@ export default function KoreksiNilaiPage() {
           <strong>Ketentuan umum :</strong>
           <ol>
             <li>Naskah Dinas yang sudah pernah digunakan pada periode sebelumnya, tidak dapat digunakan kembali.</li>
+            <li>Naskah Dinas hanya dapat digunakan pada 1 faktor saja.</li>
             <li>File Naskah Dinas diunggah format PDF &amp; max size 0,5 MB.</li>
           </ol>
         </div>
@@ -273,6 +307,7 @@ export default function KoreksiNilaiPage() {
                 const key = `${faktor.id}-${nomor}`;
                 const entry = entries[key] || { judul: "", linkFile: "", namaFile: "" };
                 const isUploading = uploadingKey === key;
+                const isDeleting = deletingKey === key;
                 const inputId = `upload-${key}`;
 
                 return (
@@ -316,6 +351,19 @@ export default function KoreksiNilaiPage() {
                           <path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3" />
                         </svg>
                       </label>
+                      <button
+                        type="button"
+                        className={styles.deleteButton}
+                        title="Hapus bukti dukung ini"
+                        onClick={() => handleDelete(faktor.id, nomor)}
+                        disabled={isDeleting || (!entry.judul && !entry.linkFile)}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M3 6h18" />
+                          <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                          <path d="M10 11v6M14 11v6" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 );

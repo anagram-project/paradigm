@@ -93,6 +93,19 @@
   flex-shrink: 0;
 }
 
+.sidebarPoweredBy {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(250, 250, 250, 0.45);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  flex-shrink: 0;
+}
+
 .main {
   flex-grow: 1;
   display: flex;
