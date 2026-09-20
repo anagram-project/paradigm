@@ -5,19 +5,20 @@ import styles from "./page.module.css";
 
 const ROMAN = ["I", "II", "III", "IV"];
 
-// Menghasilkan daftar periode (triwulan) terbaru dulu, dimulai dari triwulan
-// berjalan saat ini mundur ke belakang.
-function generatePeriodeOptions(jumlah = 6) {
+// Menghasilkan daftar periode (triwulan) mulai dari triwulan berjalan saat
+// ini, maju ke depan sebanyak `jumlah` (default 4: triwulan berjalan + 3
+// triwulan berikutnya). Daftar ini otomatis bergeser tiap triwulan berganti.
+function generatePeriodeOptions(jumlah = 4) {
   const now = new Date();
   let q = Math.floor(now.getMonth() / 3); // 0-3
   let year = now.getFullYear();
   const options = [];
   for (let i = 0; i < jumlah; i++) {
     options.push(`Triwulan ${ROMAN[q]} ${year}`);
-    q -= 1;
-    if (q < 0) {
-      q = 3;
-      year -= 1;
+    q += 1;
+    if (q > 3) {
+      q = 0;
+      year += 1;
     }
   }
   return options;
