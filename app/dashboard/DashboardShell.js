@@ -124,14 +124,14 @@ const SETTINGS_ITEM = {
   ),
 };
 
-function NavLink({ item, pathname, collapsed, boxed }) {
+function NavLink({ item, pathname, collapsed }) {
   const isActive = pathname === item.href;
   return (
     <Link
       href={item.href}
-      className={`${styles.navItem} ${boxed ? styles.navItemBoxed : ""} ${
-        isActive ? (boxed ? styles.navItemBoxedActive : styles.navItemActive) : ""
-      } ${collapsed ? styles.navItemCollapsed : ""}`}
+      className={`${styles.navItem} ${isActive ? styles.navItemActive : ""} ${
+        collapsed ? styles.navItemCollapsed : ""
+      }`}
       title={collapsed ? item.label : undefined}
     >
       {item.icon}
@@ -203,7 +203,7 @@ export default function DashboardShell({ user, children }) {
           title={collapsed ? "Buka sidebar" : "Tutup sidebar"}
           className={`${styles.collapseToggle} ${collapsed ? styles.collapseToggleFlipped : ""}`}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
             <path d="M15 6l-6 6 6 6" />
           </svg>
         </button>
@@ -235,13 +235,7 @@ export default function DashboardShell({ user, children }) {
                 </div>
               )}
               {group.items.map((item) => (
-                <NavLink
-                  key={item.href}
-                  item={item}
-                  pathname={pathname}
-                  collapsed={collapsed}
-                  boxed={!collapsed}
-                />
+                <NavLink key={item.href} item={item} pathname={pathname} collapsed={collapsed} />
               ))}
             </div>
           ))}

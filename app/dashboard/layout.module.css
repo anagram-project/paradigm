@@ -12,7 +12,13 @@
   display: flex;
   flex-direction: column;
   transition: width 0.2s ease;
-  overflow: hidden;
+  /* Sengaja TIDAK overflow:hidden — tombol buka/tutup (.collapseToggle)
+     posisinya nempel di tepi kanan sidebar dan sebagian keluar dari kotak
+     sidebar (right negatif). Kalau overflow di-hidden, separuh tombolnya
+     ikut terpotong/ hilang. Teks yang perlu disembunyikan saat collapsed
+     sudah diatur lewat rendering kondisional di JSX, jadi tidak perlu
+     overflow:hidden untuk itu. */
+  overflow: visible;
 }
 
 .sidebarCollapsed {
