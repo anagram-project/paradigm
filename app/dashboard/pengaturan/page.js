@@ -1,6 +1,9 @@
+import { requireMenuAccess } from "@/lib/requireMenuAccess";
 import Placeholder from "../_components/Placeholder";
 
-export default function PengaturanPage() {
+export default async function PengaturanPage() {
+  await requireMenuAccess("/dashboard/pengaturan");
+
   return (
     <Placeholder
       title="Pengaturan"

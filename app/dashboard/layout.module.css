@@ -5,11 +5,48 @@
 }
 
 .sidebar {
+  position: relative;
   width: 260px;
   flex-shrink: 0;
   background: var(--cobalt);
   display: flex;
   flex-direction: column;
+  transition: width 0.2s ease;
+  overflow: hidden;
+}
+
+.sidebarCollapsed {
+  width: 76px;
+}
+
+.collapseToggle {
+  position: absolute;
+  top: 28px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--azure);
+  color: var(--white);
+  border: 2px solid var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  padding: 0;
+}
+
+.collapseToggle:hover {
+  background: var(--cobalt);
+}
+
+.collapseToggle svg {
+  transition: transform 0.2s ease;
+}
+
+.collapseToggleFlipped svg {
+  transform: rotate(180deg);
 }
 
 .sidebarBrand {
@@ -18,6 +55,11 @@
   gap: 10px;
   padding: 24px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.sidebarBrandCollapsed {
+  justify-content: center;
+  padding: 24px 0;
 }
 
 .sidebarBrandMark {
@@ -74,6 +116,18 @@
   font-size: 13.5px;
   font-weight: 500;
   text-decoration: none;
+  white-space: nowrap;
+}
+
+.navItemCollapsed {
+  justify-content: center;
+  padding: 11px 0;
+  margin: 2px 14px;
+}
+
+.navItemLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .navItem:hover {
@@ -104,6 +158,12 @@
   font-weight: 600;
   letter-spacing: 0.2px;
   flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.sidebarPoweredByCollapsed {
+  justify-content: center;
+  padding: 12px 0 16px;
 }
 
 .main {

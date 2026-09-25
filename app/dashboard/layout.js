@@ -10,6 +10,7 @@ export default async function DashboardLayout({ children }) {
   const user = {
     nama: session?.nama || "Pengguna",
     jabatan: session?.jabatan || "",
+    role: session?.role || "biasa",
   };
 
   return <DashboardShell user={user}>{children}</DashboardShell>;

@@ -37,6 +37,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# hasil tarikan data lokal (scripts/tarik-iku.mjs) — jangan ikut ter-commit,
+# bisa berisi data pegawai mentah.
+/scripts/output/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

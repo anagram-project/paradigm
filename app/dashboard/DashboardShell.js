@@ -1,9 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { canAccessPath } from "@/lib/roles";
 import styles from "./layout.module.css";
+
+const SIDEBAR_COLLAPSED_KEY = "paradigm.sidebarCollapsed";
 
 const NAV_ITEMS = [
   {
@@ -78,15 +82,18 @@ const SETTINGS_ITEM = {
   ),
 };
 
-function NavLink({ item, pathname }) {
+function NavLink({ item, pathname, collapsed }) {
   const isActive = pathname === item.href;
   return (
     <Link
       href={item.href}
-      className={`${styles.navItem} ${isActive ? styles.navItemActive : ""}`}
+      className={`${styles.navItem} ${isActive ? styles.navItemActive : ""} ${
+        collapsed ? styles.navItemCollapsed : ""
+      }`}
+      title={collapsed ? item.label : undefined}
     >
       {item.icon}
-      {item.label}
+      {!collapsed && <span className={styles.navItemLabel}>{item.label}</span>}
     </Link>
   );
 }
@@ -97,10 +104,43 @@ function NavLink({ item, pathname }) {
 export default function DashboardShell({ user, children }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [collapsed, setCollapsed] = useState(false);
+
+  // Preferensi buka/tutup sidebar disimpan di localStorage per-browser saja
+  // (bukan di sesi/akun), murni supaya tampilan tetap sesuai pilihan
+  // terakhir pengguna saat halaman di-refresh.
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+      if (saved === "1") setCollapsed(true);
+    } catch (err) {
+      // localStorage bisa saja tidak tersedia (mode privat dsb.) — abaikan.
+    }
+  }, []);
+
+  function toggleCollapsed() {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
+      } catch (err) {
+        // abaikan jika localStorage tidak tersedia
+      }
+      return next;
+    });
+  }
 
   const nama = user?.nama || "Pengguna";
   const jabatan = user?.jabatan || "";
+  const role = user?.role || "biasa";
   const initial = nama.trim().charAt(0).toUpperCase() || "?";
+
+  // Menu (termasuk Pengaturan) disaring sesuai kewenangan role yang login —
+  // lihat lib/roles.js. Ini cuma menyembunyikan link-nya; akses langsung
+  // lewat URL ke halaman yang dibatasi tetap ditutup di sisi server lewat
+  // lib/requireMenuAccess.js.
+  const visibleNavItems = NAV_ITEMS.filter((item) => canAccessPath(role, item.href));
+  const canSeeSettings = canAccessPath(role, SETTINGS_ITEM.href);
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -109,32 +149,48 @@ export default function DashboardShell({ user, children }) {
 
   return (
     <div className={styles.shell}>
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarBrand}>
+      <aside className={`${styles.sidebar} ${collapsed ? styles.sidebarCollapsed : ""}`}>
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-label={collapsed ? "Buka sidebar" : "Tutup sidebar"}
+          title={collapsed ? "Buka sidebar" : "Tutup sidebar"}
+          className={`${styles.collapseToggle} ${collapsed ? styles.collapseToggleFlipped : ""}`}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M15 6l-6 6 6 6" />
+          </svg>
+        </button>
+
+        <div className={`${styles.sidebarBrand} ${collapsed ? styles.sidebarBrandCollapsed : ""}`}>
           <div className={styles.sidebarBrandMark}>
             <Image src="/images/logo.png" alt="Logo PARADIGM" width={34} height={34} />
           </div>
-          <div className={styles.sidebarBrandText}>
-            <div className={styles.sidebarBrandName}>PARADIGM</div>
-            <div className={styles.sidebarBrandSub}>Dit. Pelaksanaan Anggaran</div>
-          </div>
+          {!collapsed && (
+            <div className={styles.sidebarBrandText}>
+              <div className={styles.sidebarBrandName}>PARADIGM</div>
+              <div className={styles.sidebarBrandSub}>Dit. Pelaksanaan Anggaran</div>
+            </div>
+          )}
         </div>
 
         <nav className={styles.navList}>
-          {NAV_ITEMS.map((item) => (
-            <NavLink key={item.href} item={item} pathname={pathname} />
+          {visibleNavItems.map((item) => (
+            <NavLink key={item.href} item={item} pathname={pathname} collapsed={collapsed} />
           ))}
         </nav>
 
-        <div className={styles.sidebarFooter}>
-          <NavLink item={SETTINGS_ITEM} pathname={pathname} />
-        </div>
+        {canSeeSettings && (
+          <div className={styles.sidebarFooter}>
+            <NavLink item={SETTINGS_ITEM} pathname={pathname} collapsed={collapsed} />
+          </div>
+        )}
 
-        <div className={styles.sidebarPoweredBy}>
+        <div className={`${styles.sidebarPoweredBy} ${collapsed ? styles.sidebarPoweredByCollapsed : ""}`}>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
             <path d="M13 2 3 14h7l-1 8 11-14h-7l1-6z" />
           </svg>
-          powered by KPA1
+          {!collapsed && "powered by KPA1"}
         </div>
       </aside>
 
