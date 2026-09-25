@@ -19,15 +19,24 @@ const HOME_ITEM = {
   ),
 };
 
-// Klasifikasi menu di sidebar: setiap grup punya label kecil di atasnya.
-// - "Umum": menu yang bisa diakses semua role (termasuk role Biasa).
-// - "Khusus LO Subdit": menu yang hanya untuk role dengan akses penuh
+// Klasifikasi menu di sidebar: tiap grup dirender sebagai kartu berwarna
+// dengan judul + ikon di atasnya.
+// - "Menu Reguler": menu yang bisa diakses semua role (termasuk role Biasa).
+// - "Menu Khusus LO": menu yang hanya untuk role dengan akses penuh
 //   (Admin KKPA & LO Subdit) — lihat lib/roles.js. Kalau semua item dalam
-//   satu grup tersembunyi untuk role yang login, judul grupnya juga ikut
+//   satu grup tersembunyi untuk role yang login, kartu grupnya juga ikut
 //   disembunyikan (lihat filter di komponen DashboardShell).
 const NAV_GROUPS = [
   {
-    label: "Umum",
+    label: "Menu Reguler",
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="9" cy="8" r="3" />
+        <path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6" />
+        <circle cx="17" cy="8" r="2.5" />
+        <path d="M16 14.2c2.8.6 4.5 2.6 4.5 5.8" />
+      </svg>
+    ),
     items: [
       {
         href: "/dashboard/buat-ipr",
@@ -71,7 +80,13 @@ const NAV_GROUPS = [
     ],
   },
   {
-    label: "Khusus LO Subdit",
+    label: "Menu Khusus LO",
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" />
+      </svg>
+    ),
     items: [
       {
         href: "/dashboard/verifikasi-koreksi",
@@ -109,14 +124,14 @@ const SETTINGS_ITEM = {
   ),
 };
 
-function NavLink({ item, pathname, collapsed }) {
+function NavLink({ item, pathname, collapsed, boxed }) {
   const isActive = pathname === item.href;
   return (
     <Link
       href={item.href}
-      className={`${styles.navItem} ${isActive ? styles.navItemActive : ""} ${
-        collapsed ? styles.navItemCollapsed : ""
-      }`}
+      className={`${styles.navItem} ${boxed ? styles.navItemBoxed : ""} ${
+        isActive ? (boxed ? styles.navItemBoxedActive : styles.navItemActive) : ""
+      } ${collapsed ? styles.navItemCollapsed : ""}`}
       title={collapsed ? item.label : undefined}
     >
       {item.icon}
@@ -209,10 +224,24 @@ export default function DashboardShell({ user, children }) {
           {canSeeHome && <NavLink item={HOME_ITEM} pathname={pathname} collapsed={collapsed} />}
 
           {visibleNavGroups.map((group) => (
-            <div key={group.label} className={styles.navGroup}>
-              {!collapsed && <div className={styles.navGroupLabel}>{group.label}</div>}
+            <div
+              key={group.label}
+              className={`${styles.navGroup} ${!collapsed ? styles.navGroupBox : ""}`}
+            >
+              {!collapsed && (
+                <div className={styles.navGroupHeader}>
+                  {group.icon}
+                  <span>{group.label}</span>
+                </div>
+              )}
               {group.items.map((item) => (
-                <NavLink key={item.href} item={item} pathname={pathname} collapsed={collapsed} />
+                <NavLink
+                  key={item.href}
+                  item={item}
+                  pathname={pathname}
+                  collapsed={collapsed}
+                  boxed={!collapsed}
+                />
               ))}
             </div>
           ))}
