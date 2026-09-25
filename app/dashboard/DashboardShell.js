@@ -230,7 +230,7 @@ export default function DashboardShell({ user, children }) {
             >
               {!collapsed && (
                 <div className={styles.navGroupHeader}>
-                  {group.icon}
+                  <span className={styles.navGroupIcon}>{group.icon}</span>
                   <span>{group.label}</span>
                 </div>
               )}

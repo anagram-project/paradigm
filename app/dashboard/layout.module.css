@@ -26,8 +26,8 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--azure);
-  color: var(--white);
+  background: var(--amber);
+  color: var(--azure);
   border: 2px solid var(--white);
   display: flex;
   align-items: center;
@@ -38,7 +38,7 @@
 }
 
 .collapseToggle:hover {
-  background: var(--cobalt);
+  background: var(--amber-dark);
 }
 
 .collapseToggle svg {
@@ -141,14 +141,27 @@
   align-items: center;
   gap: 8px;
   padding: 8px 14px 6px;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--navy);
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
 }
 
+.navGroupIcon {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--navy);
+  color: var(--amber);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .navGroupBox .navItem {
   margin: 1px 6px;
+  color: var(--navy);
 }
 
 .navItem {
@@ -192,13 +205,13 @@
    background amber. Selector digabung (.navItem.navItemBoxed) supaya
    urutan di file tidak memengaruhi mana yang menang. */
 .navItem.navItemBoxed:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: var(--white);
+  background: rgba(6, 36, 85, 0.08);
+  color: var(--navy);
 }
 
 .navItem.navItemBoxedActive {
-  background: rgba(255, 255, 255, 0.28);
-  color: var(--white);
+  background: var(--navy);
+  color: var(--amber);
   font-weight: 700;
 }
 
