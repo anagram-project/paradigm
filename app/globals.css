@@ -10,6 +10,7 @@
   --border: rgba(6, 36, 85, 0.08);
   --card-bg: #ffffff;
   --badge-bg: #E3EFFC;
+  --amber: #EC9A3C;      /* Amber - kartu klasifikasi menu di sidebar */
 }
 
 * {

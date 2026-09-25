@@ -9,65 +9,92 @@ import styles from "./layout.module.css";
 
 const SIDEBAR_COLLAPSED_KEY = "paradigm.sidebarCollapsed";
 
-const NAV_ITEMS = [
+const HOME_ITEM = {
+  href: "/dashboard",
+  label: "Home",
+  icon: (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3 11l9-8 9 8M5 10v10h4v-6h6v6h4V10" />
+    </svg>
+  ),
+};
+
+// Klasifikasi menu di sidebar: setiap grup punya label kecil di atasnya.
+// - "Umum": menu yang bisa diakses semua role (termasuk role Biasa).
+// - "Khusus LO Subdit": menu yang hanya untuk role dengan akses penuh
+//   (Admin KKPA & LO Subdit) — lihat lib/roles.js. Kalau semua item dalam
+//   satu grup tersembunyi untuk role yang login, judul grupnya juga ikut
+//   disembunyikan (lihat filter di komponen DashboardShell).
+const NAV_GROUPS = [
   {
-    href: "/dashboard",
-    label: "Home",
-    icon: (
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M3 11l9-8 9 8M5 10v10h4v-6h6v6h4V10" />
-      </svg>
-    ),
+    label: "Umum",
+    items: [
+      {
+        href: "/dashboard/buat-ipr",
+        label: "Buat IPR",
+        icon: (
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M8 2h6l4 4v14a2 2 0 01-2 2H8a2 2 0 01-2-2V4a2 2 0 012-2z" />
+            <path d="M9 12h6M9 16h6M9 8h2" />
+          </svg>
+        ),
+      },
+      {
+        href: "/dashboard/koreksi-nilai",
+        label: "Manajemen Koreksi Nilai",
+        icon: (
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M4 20h4l10-10-4-4L4 16v4z" />
+            <path d="M13 6l4 4" />
+          </svg>
+        ),
+      },
+      {
+        href: "/dashboard/pegawai-teladan",
+        label: "Pemilihan Pegawai Teladan",
+        icon: (
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2l2.5 6.5L21 9l-5 4.5L17.5 21 12 17l-5.5 4L8 13.5 3 9l6.5-0.5z" />
+          </svg>
+        ),
+      },
+      {
+        href: "/dashboard/timeline",
+        label: "Timeline Kinerja Triwulanan",
+        icon: (
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="4" width="18" height="17" rx="2" />
+            <path d="M3 9h18M8 2v4M16 2v4" />
+          </svg>
+        ),
+      },
+    ],
   },
   {
-    href: "/dashboard/buat-ipr",
-    label: "Buat IPR",
-    icon: (
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M8 2h6l4 4v14a2 2 0 01-2 2H8a2 2 0 01-2-2V4a2 2 0 012-2z" />
-        <path d="M9 12h6M9 16h6M9 8h2" />
-      </svg>
-    ),
-  },
-  {
-    href: "/dashboard/koreksi-nilai",
-    label: "Manajemen Koreksi Nilai",
-    icon: (
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M4 20h4l10-10-4-4L4 16v4z" />
-        <path d="M13 6l4 4" />
-      </svg>
-    ),
-  },
-  {
-    href: "/dashboard/kualitas-iku",
-    label: "Design Kualitas IKU",
-    icon: (
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="8" />
-        <circle cx="12" cy="12" r="4" />
-        <circle cx="12" cy="12" r="0.7" fill="currentColor" />
-      </svg>
-    ),
-  },
-  {
-    href: "/dashboard/pegawai-teladan",
-    label: "Pemilihan Pegawai Teladan",
-    icon: (
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M12 2l2.5 6.5L21 9l-5 4.5L17.5 21 12 17l-5.5 4L8 13.5 3 9l6.5-0.5z" />
-      </svg>
-    ),
-  },
-  {
-    href: "/dashboard/timeline",
-    label: "Timeline Kinerja Triwulanan",
-    icon: (
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="3" y="4" width="18" height="17" rx="2" />
-        <path d="M3 9h18M8 2v4M16 2v4" />
-      </svg>
-    ),
+    label: "Khusus LO Subdit",
+    items: [
+      {
+        href: "/dashboard/verifikasi-koreksi",
+        label: "Verifikasi Koreksi Nilai",
+        icon: (
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 12l2 2 4-4" />
+            <path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z" />
+          </svg>
+        ),
+      },
+      {
+        href: "/dashboard/kualitas-iku",
+        label: "Design Kualitas IKU",
+        icon: (
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="8" />
+            <circle cx="12" cy="12" r="4" />
+            <circle cx="12" cy="12" r="0.7" fill="currentColor" />
+          </svg>
+        ),
+      },
+    ],
   },
 ];
 
@@ -139,7 +166,11 @@ export default function DashboardShell({ user, children }) {
   // lihat lib/roles.js. Ini cuma menyembunyikan link-nya; akses langsung
   // lewat URL ke halaman yang dibatasi tetap ditutup di sisi server lewat
   // lib/requireMenuAccess.js.
-  const visibleNavItems = NAV_ITEMS.filter((item) => canAccessPath(role, item.href));
+  const canSeeHome = canAccessPath(role, HOME_ITEM.href);
+  const visibleNavGroups = NAV_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => canAccessPath(role, item.href)),
+  })).filter((group) => group.items.length > 0);
   const canSeeSettings = canAccessPath(role, SETTINGS_ITEM.href);
 
   async function handleLogout() {
@@ -175,13 +206,21 @@ export default function DashboardShell({ user, children }) {
         </div>
 
         <nav className={styles.navList}>
-          {visibleNavItems.map((item) => (
-            <NavLink key={item.href} item={item} pathname={pathname} collapsed={collapsed} />
+          {canSeeHome && <NavLink item={HOME_ITEM} pathname={pathname} collapsed={collapsed} />}
+
+          {visibleNavGroups.map((group) => (
+            <div key={group.label} className={styles.navGroup}>
+              {!collapsed && <div className={styles.navGroupLabel}>{group.label}</div>}
+              {group.items.map((item) => (
+                <NavLink key={item.href} item={item} pathname={pathname} collapsed={collapsed} />
+              ))}
+            </div>
           ))}
         </nav>
 
         {canSeeSettings && (
           <div className={styles.sidebarFooter}>
+            {!collapsed && <div className={styles.navGroupLabel}>Settings</div>}
             <NavLink item={SETTINGS_ITEM} pathname={pathname} collapsed={collapsed} />
           </div>
         )}
