@@ -124,14 +124,14 @@ const SETTINGS_ITEM = {
   ),
 };
 
-function NavLink({ item, pathname, collapsed }) {
+function NavLink({ item, pathname, collapsed, boxed }) {
   const isActive = pathname === item.href;
   return (
     <Link
       href={item.href}
-      className={`${styles.navItem} ${isActive ? styles.navItemActive : ""} ${
-        collapsed ? styles.navItemCollapsed : ""
-      }`}
+      className={`${styles.navItem} ${boxed ? styles.navItemBoxed : ""} ${
+        isActive ? (boxed ? styles.navItemBoxedActive : styles.navItemActive) : ""
+      } ${collapsed ? styles.navItemCollapsed : ""}`}
       title={collapsed ? item.label : undefined}
     >
       {item.icon}
@@ -235,7 +235,13 @@ export default function DashboardShell({ user, children }) {
                 </div>
               )}
               {group.items.map((item) => (
-                <NavLink key={item.href} item={item} pathname={pathname} collapsed={collapsed} />
+                <NavLink
+                  key={item.href}
+                  item={item}
+                  pathname={pathname}
+                  collapsed={collapsed}
+                  boxed={!collapsed}
+                />
               ))}
             </div>
           ))}

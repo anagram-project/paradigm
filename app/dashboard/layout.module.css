@@ -133,12 +133,12 @@
   white-space: nowrap;
 }
 
-/* Klasifikasi menu (Menu Reguler / Menu Khusus LO): hanya judul grupnya yang
-   diberi warna kuning (seperti pil/badge) — item-item menu di bawahnya tetap
-   pakai tampilan biru standar sidebar, sama seperti Home/Pengaturan. */
+/* Klasifikasi menu (Menu Reguler / Menu Khusus LO): satu kartu kuning utuh
+   membungkus judul grup + seluruh item menu di dalamnya, sesuai contoh. */
 .navGroupBox {
-  display: flex;
-  flex-direction: column;
+  background: var(--amber);
+  border-radius: 14px;
+  padding: 6px 0 8px;
   gap: 1px;
 }
 
@@ -146,10 +146,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 12px;
-  margin: 0 12px 6px;
-  border-radius: 8px;
-  background: var(--amber);
+  padding: 8px 14px 6px;
   color: var(--navy);
   font-size: 12px;
   font-weight: 700;
@@ -166,6 +163,11 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.navGroupBox .navItem {
+  margin: 1px 6px;
+  color: var(--navy);
 }
 
 .navItem {
@@ -201,6 +203,21 @@
 .navItemActive {
   background: var(--azure);
   color: var(--white);
+  font-weight: 700;
+}
+
+/* Item di dalam kartu grup (.navGroupBox) pakai overlay navy transparan
+   untuk hover/aktif, bukan biru azure — supaya tetap kontras di atas
+   background kuning. Selector digabung (.navItem.navItemBoxed) supaya
+   urutan di file tidak memengaruhi mana yang menang. */
+.navItem.navItemBoxed:hover {
+  background: rgba(6, 36, 85, 0.08);
+  color: var(--navy);
+}
+
+.navItem.navItemBoxedActive {
+  background: var(--navy);
+  color: var(--amber);
   font-weight: 700;
 }
 
