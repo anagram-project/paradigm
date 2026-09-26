@@ -51,6 +51,9 @@ export async function DELETE(request) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    if (error.code === "TERKUNCI") {
+      return NextResponse.json({ error: error.message }, { status: 423 });
+    }
     console.error("Gagal menghapus bukti dukung koreksi nilai:", error);
     return NextResponse.json(
       { error: "Terjadi kesalahan pada server. Coba lagi beberapa saat." },

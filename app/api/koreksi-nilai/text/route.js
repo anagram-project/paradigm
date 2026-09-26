@@ -48,6 +48,9 @@ export async function POST(request) {
     if (error.code === "JUDUL_BENTROK") {
       return NextResponse.json({ error: error.message }, { status: 409 });
     }
+    if (error.code === "TERKUNCI") {
+      return NextResponse.json({ error: error.message }, { status: 423 });
+    }
     console.error("Gagal menyimpan judul koreksi nilai:", error);
     return NextResponse.json(
       { error: "Terjadi kesalahan pada server. Coba lagi beberapa saat." },

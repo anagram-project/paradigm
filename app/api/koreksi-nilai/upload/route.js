@@ -79,6 +79,9 @@ export async function POST(request) {
 
     return NextResponse.json({ ok: true, linkFile: uploaded.link, namaFile: uploaded.name });
   } catch (error) {
+    if (error.code === "TERKUNCI") {
+      return NextResponse.json({ error: error.message }, { status: 423 });
+    }
     console.error("Gagal mengunggah naskah dinas:", error);
     return NextResponse.json(
       { error: "Gagal mengunggah file ke Google Drive. Coba lagi beberapa saat." },

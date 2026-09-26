@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { getEntriesForUser } from "@/lib/koreksiNilai";
+import { getEntriesForUser, getVerifikasiStatus } from "@/lib/koreksiNilai";
 
 export const runtime = "nodejs";
 
@@ -19,8 +19,11 @@ export async function GET(request) {
   }
 
   try {
-    const entries = await getEntriesForUser(session.nip, periode);
-    return NextResponse.json({ ok: true, entries });
+    const [entries, verifikasi] = await Promise.all([
+      getEntriesForUser(session.nip, periode),
+      getVerifikasiStatus({ nip: session.nip, periode }),
+    ]);
+    return NextResponse.json({ ok: true, entries, locked: verifikasi.locked });
   } catch (error) {
     console.error("Gagal mengambil data koreksi nilai:", error);
     return NextResponse.json(

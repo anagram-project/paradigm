@@ -47,6 +47,7 @@ export default function KoreksiNilaiPage() {
   const periodeOptions = useMemo(() => generatePeriodeOptions(), []);
   const [periode, setPeriode] = useState(periodeOptions[0]);
   const [entries, setEntries] = useState(emptyEntries());
+  const [locked, setLocked] = useState(false);
   const [editingFaktor, setEditingFaktor] = useState({});
   const [savingFaktor, setSavingFaktor] = useState({});
   const [uploadingKey, setUploadingKey] = useState(null);
@@ -66,6 +67,7 @@ export default function KoreksiNilaiPage() {
         if (!res.ok) {
           setMessage({ type: "error", text: data.error || "Gagal memuat data." });
           setEntries(emptyEntries());
+          setLocked(false);
           return;
         }
         const map = emptyEntries();
@@ -76,6 +78,8 @@ export default function KoreksiNilaiPage() {
           }
         });
         setEntries(map);
+        setLocked(!!data.locked);
+        if (data.locked) setEditingFaktor({});
       } catch {
         if (!cancelled) setMessage({ type: "error", text: "Tidak bisa terhubung ke server." });
       } finally {
@@ -96,10 +100,12 @@ export default function KoreksiNilaiPage() {
   }
 
   function toggleEdit(faktorId) {
+    if (locked) return;
     setEditingFaktor((prev) => ({ ...prev, [faktorId]: !prev[faktorId] }));
   }
 
   async function handleSimpanFaktor(faktorId) {
+    if (locked) return;
     setSavingFaktor((prev) => ({ ...prev, [faktorId]: true }));
     setMessage(null);
     try {
@@ -128,7 +134,7 @@ export default function KoreksiNilaiPage() {
   }
 
   async function handleUpload(faktorId, nomor, file) {
-    if (!file) return;
+    if (!file || locked) return;
     const key = `${faktorId}-${nomor}`;
 
     if (file.type !== "application/pdf") {
@@ -168,6 +174,7 @@ export default function KoreksiNilaiPage() {
   }
 
   async function handleDelete(faktorId, nomor) {
+    if (locked) return;
     const key = `${faktorId}-${nomor}`;
     const entry = entries[key];
     if (!entry?.judul && !entry?.linkFile) return; // slot sudah kosong, tidak ada yang dihapus
@@ -247,6 +254,16 @@ export default function KoreksiNilaiPage() {
         </div>
       </div>
 
+      {locked && (
+        <div className={styles.lockedBanner}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="4" y="10" width="16" height="10" rx="2" />
+            <path d="M8 10V7a4 4 0 018 0v3" />
+          </svg>
+          Data koreksi nilai Anda untuk periode ini sedang dikunci untuk proses verifikasi oleh LO Subdit dan tidak dapat diubah.
+        </div>
+      )}
+
       {message && (
         <div
           className={`${styles.statusMessage} ${
@@ -266,9 +283,9 @@ export default function KoreksiNilaiPage() {
               <button
                 type="button"
                 className={styles.iconButton}
-                title="Simpan"
+                title={locked ? "Data sedang dikunci untuk verifikasi" : "Simpan"}
                 onClick={() => handleSimpanFaktor(faktor.id)}
-                disabled={isSaving || loading}
+                disabled={isSaving || loading || locked}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
@@ -278,9 +295,9 @@ export default function KoreksiNilaiPage() {
               <button
                 type="button"
                 className={styles.iconButton}
-                title={isEditing ? "Batal edit" : "Edit"}
+                title={locked ? "Data sedang dikunci untuk verifikasi" : isEditing ? "Batal edit" : "Edit"}
                 onClick={() => toggleEdit(faktor.id)}
-                disabled={loading}
+                disabled={loading || locked}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 20h9" />
@@ -345,7 +362,12 @@ export default function KoreksiNilaiPage() {
                           e.target.value = "";
                         }}
                       />
-                      <label htmlFor={inputId} className={styles.uploadButton} title="Unggah file PDF" style={isUploading ? { pointerEvents: "none", opacity: 0.6 } : undefined}>
+                      <label
+                        htmlFor={inputId}
+                        className={styles.uploadButton}
+                        title={locked ? "Data sedang dikunci untuk verifikasi" : "Unggah file PDF"}
+                        style={isUploading || locked ? { pointerEvents: "none", opacity: 0.6 } : undefined}
+                      >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FAFAFA" strokeWidth="2">
                           <path d="M12 16V4M7 9l5-5 5 5" />
                           <path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3" />
@@ -354,9 +376,9 @@ export default function KoreksiNilaiPage() {
                       <button
                         type="button"
                         className={styles.deleteButton}
-                        title="Hapus bukti dukung ini"
+                        title={locked ? "Data sedang dikunci untuk verifikasi" : "Hapus bukti dukung ini"}
                         onClick={() => handleDelete(faktor.id, nomor)}
-                        disabled={isDeleting || (!entry.judul && !entry.linkFile)}
+                        disabled={isDeleting || locked || (!entry.judul && !entry.linkFile)}
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M3 6h18" />
