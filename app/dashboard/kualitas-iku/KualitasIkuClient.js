@@ -9,7 +9,8 @@ import styles from "./page.module.css";
 // Awal" (KMK Nomor 127 Tahun 2026) yang dikonfirmasi bersama LO Subdit.
 // Semua angka contoh pada materi tsb (NHK 105,17 -> kalibrasi 103,87;
 // NPK 100,71 -> kalibrasi 100,54; NKP Awal 103,04) sudah dicocokkan
-// dengan rumus di bawah ini.
+// dengan rumus di bawah ini — layout tabelnya mengikuti susunan yang
+// diminta, tapi rumus & ketentuannya TIDAK diubah dari versi sebelumnya.
 //
 // Catatan penting yang BELUM ada rumus resminya di materi yang diterima:
 // - Cara persis Nilai Kualitas IKU digabung dengan Bobot Kualitas Target
@@ -19,7 +20,12 @@ import styles from "./page.module.css";
 // - Batas angka pasti tiap pita Bobot Kualitas Target IKU Lama (mis. rasio
 //   presisi antar Target Y / Realisasi Y-1 / Target Y-1) tidak dicantumkan
 //   pada materi berupa diagram — sehingga LO memilih sendiri pita yang
-//   paling sesuai dengan kondisi datanya secara kualitatif.
+//   paling sesuai dengan kondisi datanya (skenario A/B ditentukan otomatis
+//   dari angka Target Y-1 & Realisasi Y-1 yang diisi, tapi pita presisinya
+//   tetap dipilih manual).
+// - "Indeks Capaian Y" pada tabel 1.B sengaja tetap input manual (tidak
+//   diotomatisasi dari Target Y & Real Y) karena rumus & pembulatan
+//   resminya tidak tercantum pada materi yang diterima.
 // Karena itu, hasil dari halaman ini adalah SIMULASI / alat bantu estimasi,
 // bukan nilai resmi. Nilai resmi tetap mengacu pada aplikasi manajemen
 // kinerja Kemenkeu dan keputusan Tim Penilai Kinerja.
@@ -46,65 +52,59 @@ const KUALITAS_IKU_TABLE = {
 };
 
 const POLARISASI_OPTIONS = [
-  { value: "maximize", label: "Maximize (semakin besar semakin baik)" },
-  { value: "minimize", label: "Minimize (semakin kecil semakin baik)" },
-  { value: "stabilize", label: "Stabilize (semakin stabil semakin baik)" },
+  { value: "maximize", label: "Maximize" },
+  { value: "minimize", label: "Minimize" },
+  { value: "stabilize", label: "Stabilize" },
 ];
 
-// Skenario A/B tiap polarisasi, beserta 5 pita Bobot Kualitas Target IKU
-// Lama-nya (diurutkan dari yang paling menantang / bobot tertinggi).
+// Skenario A/B tiap polarisasi (ditentukan otomatis dari Target Y-1 &
+// Realisasi Y-1), beserta 5 pita Bobot Kualitas Target IKU Lama-nya.
 const TARGET_BANDS = {
   maximize: {
     A: {
-      label: "Realisasi Y-1 ≥ Target Y-1 (target tahun lalu tercapai/terlampaui)",
+      label: "Realisasi Y-1 ≥ Target Y-1",
       bands: [
-        { value: 1.2, label: "Target Y > Realisasi Y-1 — lebih tinggi dari realisasi tahun lalu (paling menantang)" },
-        { value: 1.1, label: "Target Y mendekati Realisasi Y-1, sedikit di bawahnya" },
-        { value: 1.0, label: "Target Y berada di tengah antara Realisasi Y-1 dan Target Y-1" },
-        { value: 0.9, label: "Target Y mendekati Target Y-1, sedikit di atasnya" },
-        { value: 0.8, label: "Target Y ≤ Target Y-1 — sama/lebih rendah dari target tahun lalu (paling tidak menantang)" },
+        { value: 1.2, label: "Target Y > Real Y-1 (paling menantang)" },
+        { value: 1.1, label: "Target Y mendekati Real Y-1 (sedikit di bawah)" },
+        { value: 1.0, label: "Target Y di tengah Real Y-1 & Target Y-1" },
+        { value: 0.9, label: "Target Y mendekati Target Y-1 (sedikit di atas)" },
+        { value: 0.8, label: "Target Y ≤ Target Y-1 (paling tidak menantang)" },
       ],
     },
     B: {
-      label: "Realisasi Y-1 < Target Y-1 (target tahun lalu tidak tercapai)",
+      label: "Realisasi Y-1 < Target Y-1",
       bands: [
-        { value: 0.8, label: "Target Y ≥ Target Y-1 — tetap/menaikkan target lama yang belum tercapai (paling tidak menantang)" },
-        { value: 0.9, label: "Target Y mendekati Target Y-1, sedikit di bawahnya" },
-        { value: 1.0, label: "Target Y berada di tengah antara Target Y-1 dan Realisasi Y-1" },
-        { value: 1.1, label: "Target Y mendekati Realisasi Y-1, sedikit di atasnya" },
-        { value: 1.2, label: "Target Y ≤ Realisasi Y-1 — disesuaikan realistis dengan capaian tahun lalu (paling menantang)" },
+        { value: 0.8, label: "Target Y ≥ Target Y-1 (paling tidak menantang)" },
+        { value: 0.9, label: "Target Y mendekati Target Y-1 (sedikit di bawah)" },
+        { value: 1.0, label: "Target Y di tengah Target Y-1 & Real Y-1" },
+        { value: 1.1, label: "Target Y mendekati Real Y-1 (sedikit di atas)" },
+        { value: 1.2, label: "Target Y ≤ Real Y-1 (paling menantang)" },
       ],
     },
   },
   minimize: {
     A: {
-      label: "Realisasi Y-1 ≤ Target Y-1 (target tahun lalu tercapai/terlampaui)",
+      label: "Realisasi Y-1 ≤ Target Y-1",
       bands: [
-        { value: 0.8, label: "Target Y ≥ Target Y-1 — sama/lebih tinggi dari target tahun lalu (paling tidak menantang)" },
-        { value: 0.9, label: "Target Y mendekati Target Y-1, sedikit di bawahnya" },
-        { value: 1.0, label: "Target Y berada di tengah antara Target Y-1 dan Realisasi Y-1" },
-        { value: 1.1, label: "Target Y mendekati Realisasi Y-1, sedikit di atasnya" },
-        { value: 1.2, label: "Target Y < Realisasi Y-1 — lebih rendah dari realisasi tahun lalu (paling menantang)" },
+        { value: 0.8, label: "Target Y ≥ Target Y-1 (paling tidak menantang)" },
+        { value: 0.9, label: "Target Y mendekati Target Y-1 (sedikit di bawah)" },
+        { value: 1.0, label: "Target Y di tengah Target Y-1 & Real Y-1" },
+        { value: 1.1, label: "Target Y mendekati Real Y-1 (sedikit di atas)" },
+        { value: 1.2, label: "Target Y < Real Y-1 (paling menantang)" },
       ],
     },
     B: {
-      label: "Realisasi Y-1 > Target Y-1 (target tahun lalu tidak tercapai)",
+      label: "Realisasi Y-1 > Target Y-1",
       bands: [
-        { value: 1.2, label: "Target Y ≤ Realisasi Y-1 — disesuaikan realistis dengan capaian tahun lalu (paling menantang)" },
-        { value: 1.1, label: "Target Y mendekati Realisasi Y-1, sedikit di atasnya" },
-        { value: 1.0, label: "Target Y berada di tengah antara Realisasi Y-1 dan Target Y-1" },
-        { value: 0.9, label: "Target Y mendekati Target Y-1, sedikit di bawahnya" },
-        { value: 0.8, label: "Target Y ≥ Target Y-1 — tetap/menaikkan target lama yang belum tercapai (paling tidak menantang)" },
+        { value: 1.2, label: "Target Y ≤ Real Y-1 (paling menantang)" },
+        { value: 1.1, label: "Target Y mendekati Real Y-1 (sedikit di atas)" },
+        { value: 1.0, label: "Target Y di tengah Real Y-1 & Target Y-1" },
+        { value: 0.9, label: "Target Y mendekati Target Y-1 (sedikit di bawah)" },
+        { value: 0.8, label: "Target Y ≥ Target Y-1 (paling tidak menantang)" },
       ],
     },
   },
 };
-
-const STABILIZE_CRITERIA = [
-  { key: "dariUU", label: "IKU yang targetnya ditetapkan berdasarkan UU" },
-  { key: "institusiPublik", label: "IKU dengan target maksimal yang diukur dari hasil penilaian institusi publik minimal setingkat Kementerian" },
-  { key: "capaianStabil", label: "IKU dengan kecenderungan capaian stabil 2 tahun berturut-turut (deviasi realisasi vs target 0%–2,5%)" },
-];
 
 const CORE_VALUES = [
   { key: "berorientasiPelayanan", label: "Berorientasi Pelayanan" },
@@ -125,101 +125,98 @@ function round2(n) {
   return Math.round((n + Number.EPSILON) * 100) / 100;
 }
 
-function emptyForm() {
+function emptyRow() {
   return {
+    id: `${Date.now()}-${Math.random()}`,
     namaIki: "",
     validitas: "",
     kendali: "",
-    jenisIku: "lama",
     polarisasi: "maximize",
-    skenario: "A",
+    jenisHistoris: "lama",
+    targetY1: "",
+    realY1: "",
+    targetY: "",
+    realY: "",
     bandValue: null,
-    stabilizeCriteria: { dariUU: false, institusiPublik: false, capaianStabil: false },
-    bobotBaruManual: 1,
+    stabilizeMemenuhiKriteria: false,
     mandatory: false,
+    bobotBaruManual: 1,
     indeksCapaian: 100,
     jumlahHari: 91,
   };
 }
 
-export default function KualitasIkuClient() {
-  const [jabatanScale, setJabatanScale] = useState("lain"); // 'tinggi' | 'lain'
-  const [form, setForm] = useState(emptyForm());
-  const [ikiList, setIkiList] = useState([]);
-  const [npkValues, setNpkValues] = useState(
-    CORE_VALUES.reduce((acc, cv) => ({ ...acc, [cv.key]: 100 }), {})
-  );
+// Menghitung semua nilai turunan (Nilai Kualitas IKU, skenario, Bobot
+// Kualitas Target, Nilai K3) dari satu baris IKI.
+function computeRow(r) {
+  const nilaiKualitasIku = r.validitas && r.kendali ? KUALITAS_IKU_TABLE[r.validitas][r.kendali] : null;
 
-  const nilaiKualitasIku =
-    form.validitas && form.kendali ? KUALITAS_IKU_TABLE[form.validitas][form.kendali] : null;
-
-  const bandGroup =
-    form.jenisIku === "lama" && (form.polarisasi === "maximize" || form.polarisasi === "minimize")
-      ? TARGET_BANDS[form.polarisasi][form.skenario]
-      : null;
+  let skenario = null;
+  if (
+    r.jenisHistoris === "lama" &&
+    (r.polarisasi === "maximize" || r.polarisasi === "minimize") &&
+    r.targetY1 !== "" &&
+    r.realY1 !== ""
+  ) {
+    const t1 = Number(r.targetY1);
+    const re1 = Number(r.realY1);
+    if (r.polarisasi === "maximize") skenario = re1 >= t1 ? "A" : "B";
+    else skenario = re1 <= t1 ? "A" : "B";
+  }
+  const bandOptions = skenario ? TARGET_BANDS[r.polarisasi][skenario].bands : [];
 
   let bobotTarget = null;
-  if (form.jenisIku === "baru") {
-    bobotTarget = Number(form.bobotBaruManual) || 1;
-  } else if (form.polarisasi === "stabilize") {
-    const anyCriteria = Object.values(form.stabilizeCriteria).some(Boolean);
-    bobotTarget = anyCriteria ? 1.2 : 1;
-  } else if (bandGroup && form.bandValue != null) {
-    bobotTarget = form.bandValue;
+  if (r.jenisHistoris === "baru") {
+    bobotTarget = Number(r.bobotBaruManual) || 1;
+  } else if (r.polarisasi === "stabilize") {
+    bobotTarget = r.stabilizeMemenuhiKriteria ? 1.2 : 1;
+  } else if (r.bandValue != null) {
+    bobotTarget = r.bandValue;
   }
-  if (bobotTarget != null && form.mandatory) {
+  if (bobotTarget != null && r.mandatory) {
     bobotTarget = Math.max(bobotTarget, 1);
   }
 
-  const nilaiK3 =
-    nilaiKualitasIku != null && bobotTarget != null ? round2((nilaiKualitasIku + bobotTarget) / 2) : null;
+  const nilaiK3 = nilaiKualitasIku != null && bobotTarget != null ? round2((nilaiKualitasIku + bobotTarget) / 2) : null;
 
-  const canAdd = form.namaIki.trim() && nilaiKualitasIku != null && nilaiK3 != null;
+  return { ...r, nilaiKualitasIku, skenario, bandOptions, bobotTarget, nilaiK3 };
+}
 
-  function updateForm(patch) {
-    setForm((prev) => ({ ...prev, ...patch }));
+export default function KualitasIkuClient() {
+  const [jabatanScale, setJabatanScale] = useState("lain"); // 'tinggi' | 'lain'
+  const [ikiList, setIkiList] = useState([]);
+  const [npkValues, setNpkValues] = useState(CORE_VALUES.reduce((acc, cv) => ({ ...acc, [cv.key]: 100 }), {}));
+
+  function updateRow(id, patch) {
+    setIkiList((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   }
 
-  function handleAddIki() {
-    if (!canAdd) return;
-    setIkiList((prev) => [
-      ...prev,
-      {
-        id: `${Date.now()}-${Math.random()}`,
-        namaIki: form.namaIki.trim(),
-        nilaiKualitasIku,
-        bobotTarget,
-        nilaiK3,
-        indeksCapaian: Number(form.indeksCapaian) || 0,
-        jumlahHari: Number(form.jumlahHari) || 0,
-      },
-    ]);
-    setForm(emptyForm());
+  function addRow() {
+    setIkiList((prev) => [...prev, emptyRow()]);
   }
 
-  function handleDeleteIki(id) {
-    setIkiList((prev) => prev.filter((row) => row.id !== id));
+  function deleteRow(id) {
+    setIkiList((prev) => prev.filter((r) => r.id !== id));
   }
+
+  const computedRows = useMemo(() => ikiList.map(computeRow), [ikiList]);
 
   const nhkRows = useMemo(() => {
-    const totalHari = ikiList.reduce((sum, r) => sum + r.jumlahHari, 0);
-    const withKualitas = ikiList.map((r) => ({
+    const withK3 = computedRows.filter((r) => r.nilaiK3 != null);
+    const totalHari = withK3.reduce((sum, r) => sum + (Number(r.jumlahHari) || 0), 0);
+    const withKualitas = withK3.map((r) => ({
       ...r,
-      nilaiKualitasCapaian: r.indeksCapaian * r.nilaiK3,
-      bobotWaktu: totalHari > 0 ? r.jumlahHari / totalHari : 0,
+      nilaiKualitasCapaian: (Number(r.indeksCapaian) || 0) * r.nilaiK3,
+      bobotWaktu: totalHari > 0 ? (Number(r.jumlahHari) || 0) / totalHari : 0,
     }));
-    const withIntermediate = withKualitas.map((r) => ({
-      ...r,
-      intermediate: r.nilaiK3 * r.bobotWaktu,
-    }));
+    const withIntermediate = withKualitas.map((r) => ({ ...r, intermediate: r.nilaiK3 * r.bobotWaktu }));
     const sumIntermediate = withIntermediate.reduce((sum, r) => sum + r.intermediate, 0);
     return withIntermediate.map((r) => ({
       ...r,
       bobotTertimbang: sumIntermediate > 0 ? r.intermediate / sumIntermediate : 0,
-      kontribusiNHK:
-        sumIntermediate > 0 ? r.nilaiKualitasCapaian * (r.intermediate / sumIntermediate) : 0,
+      kontribusiNHK: sumIntermediate > 0 ? r.nilaiKualitasCapaian * (r.intermediate / sumIntermediate) : 0,
     }));
-  }, [ikiList]);
+  }, [computedRows]);
 
   const nhk = nhkRows.reduce((sum, r) => sum + r.kontribusiNHK, 0);
   const nhkFinal = jabatanScale === "tinggi" ? nhk : calibrate115(nhk);
@@ -234,287 +231,206 @@ export default function KualitasIkuClient() {
       <div className={styles.disclaimerBanner}>
         Halaman ini adalah <strong>simulator/alat bantu estimasi</strong> Nilai K3, NHK, NPK, dan NKP Awal
         berdasarkan pemahaman bersama atas KMK Nomor 127 Tahun 2026. Beberapa detail (cara persis Nilai
-        Kualitas IKU digabung dengan Bobot Kualitas Target, aturan IKU baru, dan batas angka presisi tiap
-        pita target) belum tercantum rumus resminya pada materi yang diterima, sehingga nilai di sini{" "}
-        <strong>bersifat perkiraan</strong> — nilai resmi tetap mengacu pada aplikasi manajemen kinerja
-        Kemenkeu dan keputusan Tim Penilai Kinerja.
+        Kualitas IKU digabung dengan Bobot Kualitas Target, aturan IKU baru, batas angka presisi tiap pita
+        target, dan rumus Indeks Capaian Y) belum tercantum rumus resminya pada materi yang diterima,
+        sehingga nilai di sini <strong>bersifat perkiraan</strong> — nilai resmi tetap mengacu pada aplikasi
+        manajemen kinerja Kemenkeu dan keputusan Tim Penilai Kinerja.
       </div>
 
       <div className={styles.card}>
         <div className={styles.cardTitle}>Skala Jabatan</div>
         <div className={styles.radioRow}>
           <label className={styles.radioOption}>
-            <input
-              type="radio"
-              checked={jabatanScale === "tinggi"}
-              onChange={() => setJabatanScale("tinggi")}
-            />
+            <input type="radio" checked={jabatanScale === "tinggi"} onChange={() => setJabatanScale("tinggi")} />
             Menteri / Wakil Menteri / JPTM (skala maksimal 120, tanpa kalibrasi)
           </label>
           <label className={styles.radioOption}>
-            <input
-              type="radio"
-              checked={jabatanScale === "lain"}
-              onChange={() => setJabatanScale("lain")}
-            />
+            <input type="radio" checked={jabatanScale === "lain"} onChange={() => setJabatanScale("lain")} />
             JPTP, Administrator, Pengawas, JF, Pelaksana (dikalibrasi ke maksimal 115)
           </label>
         </div>
       </div>
 
+      <div className={styles.sectionBar}>1.A. Tambah IKI &amp; Hitung Nilai K3</div>
       <div className={styles.card}>
-        <div className={styles.cardTitle}>1. Tambah IKI &amp; Hitung Nilai K3</div>
-
-        <div className={styles.formGrid}>
-          <div className={styles.field}>
-            <label className={styles.fieldLabel}>Nama IKU / IKI</label>
-            <input
-              type="text"
-              className={styles.textInput}
-              placeholder="mis. Persentase penyelesaian laporan tepat waktu"
-              value={form.namaIki}
-              onChange={(e) => updateForm({ namaIki: e.target.value })}
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.fieldLabel}>Validitas</label>
-            <select
-              className={styles.selectInput}
-              value={form.validitas}
-              onChange={(e) => updateForm({ validitas: e.target.value })}
-            >
-              <option value="">Pilih validitas</option>
-              {VALIDITAS_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.fieldLabel}>Kendali</label>
-            <select
-              className={styles.selectInput}
-              value={form.kendali}
-              onChange={(e) => updateForm({ kendali: e.target.value })}
-            >
-              <option value="">Pilih kendali</option>
-              {KENDALI_OPTIONS.map((o) => {
-                const invalid = form.validitas && KUALITAS_IKU_TABLE[form.validitas][o.value] == null;
+        <div className={styles.tableScroll}>
+          <table className={styles.editTable}>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Nama IKU / IKI</th>
+                <th>Validitas</th>
+                <th>Kendali</th>
+                <th>Kualitas KU</th>
+                <th>Polarisasi</th>
+                <th>Jenis Historis</th>
+                <th>Target Y-1</th>
+                <th>Real Y-1</th>
+                <th>Target Y</th>
+                <th>Kualitas Target IKU</th>
+                <th>K3</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {computedRows.map((r, i) => {
+                const isLama = r.jenisHistoris === "lama";
+                const isMaxMin = r.polarisasi === "maximize" || r.polarisasi === "minimize";
                 return (
-                  <option key={o.value} value={o.value} disabled={invalid}>
-                    {o.label}
-                    {invalid ? " — tidak berlaku" : ""}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-
-          {nilaiKualitasIku != null && (
-            <div className={styles.resultBadge}>
-              Nilai Kualitas IKU: <strong>{nilaiKualitasIku}</strong>
-            </div>
-          )}
-
-          <div className={styles.field}>
-            <label className={styles.fieldLabel}>Jenis IKU</label>
-            <select
-              className={styles.selectInput}
-              value={form.jenisIku}
-              onChange={(e) => updateForm({ jenisIku: e.target.value, bandValue: null })}
-            >
-              <option value="lama">IKU Lama (punya histori Target/Realisasi Y-1)</option>
-              <option value="baru">IKU Baru (belum ada histori)</option>
-            </select>
-          </div>
-
-          {form.jenisIku === "lama" && (
-            <div className={styles.field}>
-              <label className={styles.fieldLabel}>Polarisasi</label>
-              <select
-                className={styles.selectInput}
-                value={form.polarisasi}
-                onChange={(e) => updateForm({ polarisasi: e.target.value, bandValue: null })}
-              >
-                {POLARISASI_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {form.jenisIku === "lama" && (form.polarisasi === "maximize" || form.polarisasi === "minimize") && (
-            <>
-              <div className={styles.fieldWide}>
-                <label className={styles.fieldLabel}>Kondisi tahun lalu</label>
-                <div className={styles.radioRow}>
-                  {["A", "B"].map((sk) => (
-                    <label key={sk} className={styles.radioOption}>
-                      <input
-                        type="radio"
-                        checked={form.skenario === sk}
-                        onChange={() => updateForm({ skenario: sk, bandValue: null })}
-                      />
-                      {TARGET_BANDS[form.polarisasi][sk].label}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className={styles.fieldWide}>
-                <label className={styles.fieldLabel}>Posisi Target Y (bobot kualitas target)</label>
-                <div className={styles.radioRow}>
-                  {bandGroup.bands.map((b) => (
-                    <label key={b.value} className={styles.radioOption}>
-                      <input
-                        type="radio"
-                        checked={form.bandValue === b.value}
-                        onChange={() => updateForm({ bandValue: b.value })}
-                      />
-                      {b.label} <strong>(bobot {b.value})</strong>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          {form.jenisIku === "lama" && form.polarisasi === "stabilize" && (
-            <div className={styles.fieldWide}>
-              <label className={styles.fieldLabel}>
-                Kriteria khusus (centang salah satu untuk bobot maksimal 1,2 &mdash; kosongkan untuk bobot minimal 1)
-              </label>
-              <div className={styles.radioRow}>
-                {STABILIZE_CRITERIA.map((c) => (
-                  <label key={c.key} className={styles.checkboxOption}>
-                    <input
-                      type="checkbox"
-                      checked={form.stabilizeCriteria[c.key]}
-                      onChange={(e) =>
-                        updateForm({
-                          stabilizeCriteria: { ...form.stabilizeCriteria, [c.key]: e.target.checked },
-                        })
-                      }
-                    />
-                    {c.label}
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {form.jenisIku === "baru" && (
-            <div className={styles.fieldWide}>
-              <div className={styles.hintText}>
-                Belum ada aturan resmi untuk bobot kualitas target IKU baru pada materi yang diterima &mdash;
-                silakan isi manual (default 1 / netral).
-              </div>
-              <label className={styles.fieldLabel}>Bobot Kualitas Target (manual)</label>
-              <input
-                type="number"
-                step="0.05"
-                min="0.6"
-                max="1.2"
-                className={styles.numberInput}
-                value={form.bobotBaruManual}
-                onChange={(e) => updateForm({ bobotBaruManual: e.target.value })}
-              />
-            </div>
-          )}
-
-          <div className={styles.fieldWide}>
-            <label className={styles.checkboxOption}>
-              <input
-                type="checkbox"
-                checked={form.mandatory}
-                onChange={(e) => updateForm({ mandatory: e.target.checked })}
-              />
-              IKU Mandatory dari level Kementerian (bobot kualitas target minimal 1)
-            </label>
-          </div>
-
-          {bobotTarget != null && (
-            <div className={styles.resultBadge}>
-              Bobot Kualitas Target: <strong>{bobotTarget}</strong>
-            </div>
-          )}
-
-          {nilaiK3 != null && (
-            <div className={styles.resultBadgeStrong}>
-              Nilai K3 (rata-rata): <strong>{nilaiK3}</strong>
-            </div>
-          )}
-
-          <div className={styles.field}>
-            <label className={styles.fieldLabel}>Indeks Capaian IKI (maks 120)</label>
-            <input
-              type="number"
-              className={styles.numberInput}
-              value={form.indeksCapaian}
-              onChange={(e) => updateForm({ indeksCapaian: e.target.value })}
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.fieldLabel}>Jumlah Hari IKI ini berlaku</label>
-            <input
-              type="number"
-              className={styles.numberInput}
-              value={form.jumlahHari}
-              onChange={(e) => updateForm({ jumlahHari: e.target.value })}
-            />
-          </div>
-        </div>
-
-        <button type="button" className={styles.addButton} onClick={handleAddIki} disabled={!canAdd}>
-          + Tambah ke Tabel IKI
-        </button>
-      </div>
-
-      <div className={styles.card}>
-        <div className={styles.cardTitle}>Tabel IKI &amp; Perhitungan NHK</div>
-        {nhkRows.length === 0 ? (
-          <div className={styles.hintText}>Belum ada IKI yang ditambahkan.</div>
-        ) : (
-          <div className={styles.tableScroll}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>No</th>
-                  <th>Nama IKI</th>
-                  <th>Indeks Capaian</th>
-                  <th>Nilai K3</th>
-                  <th>Nilai Kualitas Capaian</th>
-                  <th>Jumlah Hari</th>
-                  <th>Bobot Waktu</th>
-                  <th>Bobot Tertimbang</th>
-                  <th>Kontribusi NHK</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {nhkRows.map((r, i) => (
                   <tr key={r.id}>
                     <td>{i + 1}</td>
-                    <td>{r.namaIki}</td>
-                    <td>{round2(r.indeksCapaian)}</td>
-                    <td>{r.nilaiK3}</td>
-                    <td>{round2(r.nilaiKualitasCapaian)}</td>
-                    <td>{r.jumlahHari}</td>
-                    <td>{round2(r.bobotWaktu)}</td>
-                    <td>{round2(r.bobotTertimbang * 100)}%</td>
-                    <td>{round2(r.kontribusiNHK)}</td>
+                    <td>
+                      <input
+                        type="text"
+                        className={styles.cellInput}
+                        style={{ minWidth: 160 }}
+                        placeholder="Nama IKI"
+                        value={r.namaIki}
+                        onChange={(e) => updateRow(r.id, { namaIki: e.target.value })}
+                      />
+                    </td>
+                    <td>
+                      <select
+                        className={styles.cellSelect}
+                        value={r.validitas}
+                        onChange={(e) => updateRow(r.id, { validitas: e.target.value })}
+                      >
+                        <option value="">-</option>
+                        {VALIDITAS_OPTIONS.map((o) => (
+                          <option key={o.value} value={o.value}>
+                            {o.label}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        className={styles.cellSelect}
+                        value={r.kendali}
+                        onChange={(e) => updateRow(r.id, { kendali: e.target.value })}
+                      >
+                        <option value="">-</option>
+                        {KENDALI_OPTIONS.map((o) => {
+                          const invalid = r.validitas && KUALITAS_IKU_TABLE[r.validitas][o.value] == null;
+                          return (
+                            <option key={o.value} value={o.value} disabled={invalid}>
+                              {o.label}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </td>
+                    <td className={styles.computedCell}>{r.nilaiKualitasIku ?? "-"}</td>
+                    <td>
+                      <select
+                        className={styles.cellSelect}
+                        value={r.polarisasi}
+                        disabled={!isLama}
+                        onChange={(e) => updateRow(r.id, { polarisasi: e.target.value, bandValue: null })}
+                      >
+                        {POLARISASI_OPTIONS.map((o) => (
+                          <option key={o.value} value={o.value}>
+                            {o.label}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        className={styles.cellSelect}
+                        value={r.jenisHistoris}
+                        onChange={(e) => updateRow(r.id, { jenisHistoris: e.target.value, bandValue: null })}
+                      >
+                        <option value="lama">Lama</option>
+                        <option value="baru">Baru</option>
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        className={styles.cellInput}
+                        style={{ width: 80 }}
+                        disabled={!isLama || !isMaxMin}
+                        value={r.targetY1}
+                        onChange={(e) => updateRow(r.id, { targetY1: e.target.value, bandValue: null })}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        className={styles.cellInput}
+                        style={{ width: 80 }}
+                        disabled={!isLama || !isMaxMin}
+                        value={r.realY1}
+                        onChange={(e) => updateRow(r.id, { realY1: e.target.value, bandValue: null })}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        className={styles.cellInput}
+                        style={{ width: 80 }}
+                        disabled={r.jenisHistoris === "baru"}
+                        value={r.targetY}
+                        onChange={(e) => updateRow(r.id, { targetY: e.target.value })}
+                      />
+                    </td>
+                    <td>
+                      {r.jenisHistoris === "baru" ? (
+                        <input
+                          type="number"
+                          step="0.05"
+                          min="0.6"
+                          max="1.2"
+                          className={styles.cellInput}
+                          style={{ width: 80 }}
+                          title="Belum ada aturan resmi untuk IKU baru — isi manual"
+                          value={r.bobotBaruManual}
+                          onChange={(e) => updateRow(r.id, { bobotBaruManual: e.target.value })}
+                        />
+                      ) : r.polarisasi === "stabilize" ? (
+                        <select
+                          className={styles.cellSelect}
+                          style={{ minWidth: 170 }}
+                          value={r.stabilizeMemenuhiKriteria ? "ya" : "tidak"}
+                          onChange={(e) => updateRow(r.id, { stabilizeMemenuhiKriteria: e.target.value === "ya" })}
+                        >
+                          <option value="tidak">Standar (bobot 1)</option>
+                          <option value="ya">Memenuhi kriteria khusus (bobot 1,2)</option>
+                        </select>
+                      ) : r.skenario ? (
+                        <select
+                          className={styles.cellSelect}
+                          style={{ minWidth: 220 }}
+                          value={r.bandValue ?? ""}
+                          onChange={(e) => updateRow(r.id, { bandValue: Number(e.target.value) })}
+                        >
+                          <option value="">Pilih posisi Target Y</option>
+                          {r.bandOptions.map((b) => (
+                            <option key={b.value} value={b.value} title={b.label}>
+                              {b.label} (bobot {b.value})
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span className={styles.hintTextSmall}>Isi Target Y-1 &amp; Real Y-1</span>
+                      )}
+                      <label className={styles.mandatoryCheck} title="IKU Mandatory dari level Kementerian (bobot minimal 1)">
+                        <input
+                          type="checkbox"
+                          checked={r.mandatory}
+                          onChange={(e) => updateRow(r.id, { mandatory: e.target.checked })}
+                        />
+                        Mandatory
+                      </label>
+                    </td>
+                    <td className={styles.computedCellStrong}>{r.nilaiK3 ?? "-"}</td>
                     <td>
                       <button
                         type="button"
                         className={styles.deleteRowButton}
                         title="Hapus baris ini"
-                        onClick={() => handleDeleteIki(r.id)}
+                        onClick={() => deleteRow(r.id)}
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M6 6l12 12M18 6L6 18" />
@@ -522,7 +438,82 @@ export default function KualitasIkuClient() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <button type="button" className={styles.addRowLink} onClick={addRow}>
+          + tambah IKU baru
+        </button>
+      </div>
+
+      <div className={styles.sectionBar}>1.B. Perhitungan NHK &amp; NHK Kalibrasi</div>
+      <div className={styles.card}>
+        {computedRows.length === 0 ? (
+          <div className={styles.hintText}>Belum ada IKI yang ditambahkan pada tabel 1.A.</div>
+        ) : (
+          <div className={styles.tableScroll}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Nama IKU / IKI</th>
+                  <th>Target Y</th>
+                  <th>Real Y</th>
+                  <th>Indeks Capaian Y</th>
+                  <th>Nilai K3</th>
+                  <th>Nilai Kualitas Cap.</th>
+                  <th>Jumlah Hari</th>
+                  <th>Bobot Waktu</th>
+                  <th>Bobot Tertimbang</th>
+                  <th>NHK</th>
+                </tr>
+              </thead>
+              <tbody>
+                {computedRows.map((r, i) => {
+                  const withCalc = nhkRows.find((x) => x.id === r.id);
+                  return (
+                    <tr key={r.id}>
+                      <td>{i + 1}</td>
+                      <td>{r.namaIki || <span className={styles.hintTextSmall}>(tanpa nama)</span>}</td>
+                      <td>{r.targetY || "-"}</td>
+                      <td>
+                        <input
+                          type="number"
+                          className={styles.cellInput}
+                          style={{ width: 70 }}
+                          value={r.realY}
+                          onChange={(e) => updateRow(r.id, { realY: e.target.value })}
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          className={styles.cellInput}
+                          style={{ width: 70 }}
+                          value={r.indeksCapaian}
+                          onChange={(e) => updateRow(r.id, { indeksCapaian: e.target.value })}
+                        />
+                      </td>
+                      <td>{r.nilaiK3 ?? "-"}</td>
+                      <td>{withCalc ? round2(withCalc.nilaiKualitasCapaian) : "-"}</td>
+                      <td>
+                        <input
+                          type="number"
+                          className={styles.cellInput}
+                          style={{ width: 70 }}
+                          value={r.jumlahHari}
+                          onChange={(e) => updateRow(r.id, { jumlahHari: e.target.value })}
+                        />
+                      </td>
+                      <td>{withCalc ? round2(withCalc.bobotWaktu) : "-"}</td>
+                      <td>{withCalc ? `${round2(withCalc.bobotTertimbang * 100)}%` : "-"}</td>
+                      <td>{withCalc ? round2(withCalc.kontribusiNHK) : "-"}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -539,32 +530,40 @@ export default function KualitasIkuClient() {
         </div>
       </div>
 
+      <div className={styles.sectionBar}>2. Perhitungan Nilai Perilaku Kerja (NPK)</div>
       <div className={styles.card}>
-        <div className={styles.cardTitle}>2. Nilai Perilaku Kerja (NPK)</div>
         <div className={styles.hintText}>
           Isi Indeks Capaian per Core Value BerAKHLAK (hasil gabungan penilaian atasan/peers/bawahan, maks 120).
         </div>
-        <div className={styles.npkGrid}>
-          {CORE_VALUES.map((cv) => (
-            <div key={cv.key} className={styles.field}>
-              <label className={styles.fieldLabel}>{cv.label}</label>
-              <input
-                type="number"
-                className={styles.numberInput}
-                value={npkValues[cv.key]}
-                onChange={(e) => setNpkValues((prev) => ({ ...prev, [cv.key]: e.target.value }))}
-              />
-            </div>
-          ))}
-        </div>
-        <div className={styles.totalRow}>
-          <div>
-            Nilai Perilaku Kerja (NPK): <strong>{round2(npk)}</strong>
-          </div>
-          <div>
-            NPK {jabatanScale === "tinggi" ? "(skala 120, tanpa kalibrasi)" : "Kalibrasi 115"}:{" "}
-            <strong>{round2(npkFinal)}</strong>
-          </div>
+        <div className={styles.tableScroll}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                {CORE_VALUES.map((cv) => (
+                  <th key={cv.key}>{cv.label}</th>
+                ))}
+                <th>NPK</th>
+                <th>NPK Kalibrasi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                {CORE_VALUES.map((cv) => (
+                  <td key={cv.key}>
+                    <input
+                      type="number"
+                      className={styles.cellInput}
+                      style={{ width: 70 }}
+                      value={npkValues[cv.key]}
+                      onChange={(e) => setNpkValues((prev) => ({ ...prev, [cv.key]: e.target.value }))}
+                    />
+                  </td>
+                ))}
+                <td className={styles.computedCellStrong}>{round2(npk)}</td>
+                <td className={styles.computedCellStrong}>{round2(npkFinal)}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 

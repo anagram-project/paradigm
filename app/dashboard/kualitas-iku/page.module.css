@@ -229,3 +229,108 @@
 .resultCard .hintText {
   color: rgba(250, 250, 250, 0.75);
 }
+
+/* Bar judul seksi bernomor (1.A, 1.B, 2, ...) */
+.sectionBar {
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 800;
+  font-size: 14.5px;
+  border-radius: 12px;
+  padding: 12px 18px;
+}
+
+/* Tabel yang sel-selnya berisi input/select langsung (mode "spreadsheet") */
+.editTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.editTable th {
+  text-align: left;
+  color: var(--white);
+  background: var(--cobalt);
+  font-weight: 700;
+  font-size: 11.5px;
+  padding: 10px;
+  white-space: nowrap;
+}
+
+.editTable td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--navy);
+  vertical-align: middle;
+}
+
+.cellInput,
+.cellSelect {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12.5px;
+  color: var(--navy);
+  background: var(--card-bg);
+  width: 100%;
+}
+
+.cellSelect {
+  cursor: pointer;
+}
+
+.cellInput:disabled,
+.cellSelect:disabled {
+  background: #EEF2F7;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.computedCell {
+  font-weight: 700;
+  color: var(--navy);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.computedCellStrong {
+  font-weight: 800;
+  color: var(--navy);
+  background: var(--ice);
+  text-align: center;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.hintTextSmall {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: normal;
+}
+
+.addRowLink {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--cobalt);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.addRowLink:hover {
+  color: var(--navy);
+  text-decoration: underline;
+}
+
+.mandatoryCheck {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
