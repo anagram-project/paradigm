@@ -1,10 +1,7 @@
-import Placeholder from "../_components/Placeholder";
+import { requireMenuAccess } from "@/lib/requireMenuAccess";
+import BuatIprClient from "./BuatIprClient";
 
-export default function BuatIPRPage() {
-  return (
-    <Placeholder
-      title="Buat IPR"
-      description="Formulir pembuatan IPR akan ditambahkan di sini."
-    />
-  );
+export default async function BuatIPRPage() {
+  await requireMenuAccess("/dashboard/buat-ipr");
+  return <BuatIprClient />;
 }

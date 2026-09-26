@@ -1,0 +1,306 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.disclaimerBanner {
+  background: var(--badge-bg);
+  color: var(--navy);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+.warningBanner {
+  background: #FFF4E5;
+  color: #92400E;
+  border: 1px solid #FCD9A0;
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+.topBar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.topBarActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cardTitle {
+  font-weight: 800;
+  color: var(--navy);
+  font-size: 15px;
+}
+
+.hintText {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.sectionBar {
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 800;
+  font-size: 14.5px;
+  border-radius: 12px;
+  padding: 12px 18px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.textInput,
+.selectInput {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--navy);
+  background: var(--card-bg);
+}
+
+.textInput:disabled {
+  background: #EEF2F7;
+  color: var(--muted);
+}
+
+.selectInput {
+  cursor: pointer;
+  min-width: 220px;
+}
+
+.textArea {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--navy);
+  background: var(--card-bg);
+  font-family: inherit;
+  resize: vertical;
+  width: 100%;
+}
+
+.addButton {
+  background: var(--cobalt);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.addButton:hover {
+  background: var(--navy);
+}
+
+.addButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondaryButton {
+  background: var(--badge-bg);
+  color: var(--navy);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.secondaryButton:hover {
+  background: var(--ice);
+}
+
+.secondaryButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.statusMessage {
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.statusSuccess {
+  background: #E4F6EA;
+  color: #1D7A3E;
+}
+
+.statusError {
+  background: #FCE7E7;
+  color: #B3261E;
+}
+
+/* Kartu satu IKI / satu aspek perilaku kerja */
+.ikiCard {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ikiCardHeader {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ikiTitleInput {
+  flex: 1;
+  min-width: 220px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  background: var(--card-bg);
+}
+
+.ikiCardTitleStatic {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--navy);
+}
+
+.ikiBadge {
+  background: var(--badge-bg);
+  color: var(--navy);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ikiTarget {
+  font-size: 11.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.narrativeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.deleteRowButton {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #FEE2E2;
+  color: #DC2626;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.deleteRowButton:hover {
+  background: #FCA5A5;
+}
+
+.addRowLink {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--cobalt);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.addRowLink:hover {
+  color: var(--navy);
+  text-decoration: underline;
+}
+
+.tableScroll {
+  overflow-x: auto;
+}
+
+.editTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.editTable th {
+  text-align: left;
+  color: var(--white);
+  background: var(--cobalt);
+  font-weight: 700;
+  font-size: 11.5px;
+  padding: 10px;
+  white-space: nowrap;
+}
+
+.editTable td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--navy);
+  vertical-align: middle;
+}
+
+.cellInput {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12.5px;
+  color: var(--navy);
+  background: var(--card-bg);
+  width: 100%;
+}
