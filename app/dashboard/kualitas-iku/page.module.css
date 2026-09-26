@@ -366,6 +366,47 @@
   text-decoration: none;
 }
 
+.projectBarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Ringkasan nilai akhir (mis. NHK / NHK Kalibrasi) bergaya label + badge */
+.summaryBlock {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+  min-width: 280px;
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.summaryLabel {
+  color: var(--navy);
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.summaryValue {
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 800;
+  font-size: 15px;
+  border-radius: 10px;
+  padding: 10px 22px;
+  text-align: center;
+  min-width: 90px;
+}
+
 /* Baris kontrol untuk memilih & memuat proyek tersimpan */
 .periodeControls {
   display: flex;

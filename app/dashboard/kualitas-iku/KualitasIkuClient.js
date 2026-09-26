@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./page.module.css";
 
 // =====================================================================
@@ -93,6 +93,12 @@ function calibrate115(value) {
 
 function round2(n) {
   return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+
+// Format angka gaya Indonesia (koma sebagai desimal), mis. 126.89 -> "126,89".
+function formatID(n) {
+  if (n == null || Number.isNaN(n)) return "-";
+  return Number(n).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function emptyRow() {
@@ -211,6 +217,8 @@ export default function KualitasIkuClient() {
   const [selectedExisting, setSelectedExisting] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const pdfContentRef = useRef(null);
 
   const [jabatanScale, setJabatanScale] = useState("lain"); // 'tinggi' | 'lain'
   const [ikiList, setIkiList] = useState([]);
@@ -376,6 +384,64 @@ export default function KualitasIkuClient() {
       setMessage({ type: "error", text: "Tidak bisa terhubung ke server." });
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handleDownloadPdf() {
+    const node = pdfContentRef.current;
+    if (!node) return;
+    setPdfBusy(true);
+    setMessage(null);
+    // Beberapa tabel di halaman ini punya scroll horizontal (overflow-x)
+    // supaya muat di layar — untuk PDF, semua kolom harus tampak penuh,
+    // jadi overflow-nya dibuka sementara khusus saat pengambilan gambar.
+    const scrollers = Array.from(node.querySelectorAll(`.${styles.tableScroll}`));
+    const prevOverflow = scrollers.map((el) => el.style.overflowX);
+    try {
+      const [{ default: html2canvas }, jsPdfModule] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
+      const { jsPDF } = jsPdfModule;
+
+      scrollers.forEach((el) => {
+        el.style.overflowX = "visible";
+      });
+
+      const canvas = await html2canvas(node, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        windowWidth: node.scrollWidth,
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const safeName = (projectName || "simulasi-k3").trim().replace(/[^\w\-]+/g, "_") || "simulasi-k3";
+      pdf.save(`${safeName}-simulasi-k3.pdf`);
+    } catch (err) {
+      setMessage({ type: "error", text: "Gagal membuat PDF: " + (err?.message || "terjadi kesalahan.") });
+    } finally {
+      scrollers.forEach((el, i) => {
+        el.style.overflowX = prevOverflow[i];
+      });
+      setPdfBusy(false);
     }
   }
 
@@ -548,9 +614,14 @@ export default function KualitasIkuClient() {
             {JABATAN_SKP_OPTIONS.find((o) => o.value === jabatanSkp)?.label}
           </span>
         </div>
-        <button type="button" className={styles.addRowLink} onClick={handleSaveProgress} disabled={busy}>
-          {busy ? "Menyimpan..." : "Simpan Perubahan"}
-        </button>
+        <div className={styles.projectBarActions}>
+          <button type="button" className={styles.addRowLink} onClick={handleDownloadPdf} disabled={pdfBusy}>
+            {pdfBusy ? "Membuat PDF..." : "Unduh PDF"}
+          </button>
+          <button type="button" className={styles.addRowLink} onClick={handleSaveProgress} disabled={busy}>
+            {busy ? "Menyimpan..." : "Simpan Perubahan"}
+          </button>
+        </div>
       </div>
 
       {message && (
@@ -559,6 +630,7 @@ export default function KualitasIkuClient() {
         </div>
       )}
 
+      <div ref={pdfContentRef}>
       <div className={styles.disclaimerBanner}>
         Halaman ini adalah <strong>simulator/alat bantu estimasi</strong> Nilai K3, NHK, NPK, dan NKP Awal
         berdasarkan pemahaman bersama atas KMK Nomor 127 Tahun 2026. Beberapa detail (cara persis Nilai
@@ -821,12 +893,16 @@ export default function KualitasIkuClient() {
           </div>
         )}
 
-        <div className={styles.totalRow}>
-          <div>
-            Nilai Hasil Kerja (NHK): <strong>{round2(nhk)}</strong>
+        <div className={styles.summaryBlock}>
+          <div className={styles.summaryRow}>
+            <span className={styles.summaryLabel}>Nilai Hasil Kerja (NHK)</span>
+            <span className={styles.summaryValue}>{formatID(round2(nhk))}</span>
           </div>
-          <div>
-            NHK {jabatanScale === "tinggi" ? "(skala 120, tanpa kalibrasi)" : "Kalibrasi 115"}: <strong>{round2(nhkFinal)}</strong>
+          <div className={styles.summaryRow}>
+            <span className={styles.summaryLabel}>
+              NHK {jabatanScale === "tinggi" ? "(skala 120, tanpa kalibrasi)" : "Kalibrasi 115"}
+            </span>
+            <span className={styles.summaryValue}>{formatID(round2(nhkFinal))}</span>
           </div>
         </div>
       </div>
@@ -879,6 +955,7 @@ export default function KualitasIkuClient() {
           NKP Awal belum memperhitungkan Nilai Hukuman Disiplin, Nilai Dampak Pelanggaran Disiplin, Nilai
           Koreksi, maupun penggabungan dengan Nilai Kinerja Organisasi (NKO) sesuai jenjang jabatan.
         </div>
+      </div>
       </div>
     </div>
   );
