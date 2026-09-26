@@ -1,0 +1,231 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.disclaimerBanner {
+  background: var(--badge-bg);
+  color: var(--navy);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cardTitle {
+  font-weight: 800;
+  color: var(--navy);
+  font-size: 15px;
+}
+
+.hintText {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.radioRow {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radioOption,
+.checkboxOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--navy);
+  cursor: pointer;
+  line-height: 1.5;
+}
+
+.radioOption input,
+.checkboxOption input {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.textInput,
+.selectInput,
+.numberInput {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--navy);
+  background: var(--card-bg);
+}
+
+.selectInput {
+  cursor: pointer;
+}
+
+.resultBadge {
+  grid-column: 1 / -1;
+  background: var(--badge-bg);
+  color: var(--navy);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  width: fit-content;
+}
+
+.resultBadgeStrong {
+  grid-column: 1 / -1;
+  background: var(--ice);
+  color: var(--navy);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.addButton {
+  align-self: flex-start;
+  background: var(--cobalt);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.addButton:hover {
+  background: var(--navy);
+}
+
+.addButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tableScroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.table th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 11.5px;
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--navy);
+  white-space: nowrap;
+}
+
+.deleteRowButton {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #FEE2E2;
+  color: #DC2626;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.deleteRowButton:hover {
+  background: #FCA5A5;
+}
+
+.totalRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  font-size: 13.5px;
+  color: var(--navy);
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.npkGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.resultCard {
+  background: linear-gradient(160deg, var(--azure) 0%, var(--navy) 100%);
+  color: var(--white);
+  border-radius: 16px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resultCardLabel {
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.resultCardFormula {
+  font-size: 12.5px;
+  opacity: 0.85;
+}
+
+.resultCardBig {
+  font-size: 40px;
+  font-weight: 800;
+}
+
+.resultCard .hintText {
+  color: rgba(250, 250, 250, 0.75);
+}
