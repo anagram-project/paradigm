@@ -420,6 +420,26 @@
   min-width: 200px;
 }
 
+.deleteProjectButton {
+  background: #FCE7E7;
+  color: #B3261E;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.deleteProjectButton:hover {
+  background: #F8B4B4;
+}
+
+.deleteProjectButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Banner jumlah IKU vs batas minimal/maksimal */
 .limitBanner {
   background: var(--badge-bg);

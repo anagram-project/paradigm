@@ -322,6 +322,37 @@ export default function KualitasIkuClient() {
     }
   }
 
+  async function handleDeleteProject() {
+    if (!selectedExisting) return;
+    const target = selectedExisting;
+    const confirmed = window.confirm(
+      `Hapus proyek simulasi "${target}" secara permanen? Tindakan ini tidak dapat dibatalkan.`
+    );
+    if (!confirmed) return;
+
+    setBusy(true);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/kualitas-iku/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectName: target }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error || "Gagal menghapus proyek." });
+        return;
+      }
+      setProjectList((prev) => prev.filter((p) => p !== target));
+      setSelectedExisting("");
+      setMessage({ type: "success", text: `Proyek "${target}" berhasil dihapus.` });
+    } catch {
+      setMessage({ type: "error", text: "Tidak bisa terhubung ke server." });
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleConfirmJabatan() {
     if (!kedudukan || !jabatanSkp) return;
     setBusy(true);
@@ -508,11 +539,6 @@ export default function KualitasIkuClient() {
           <button type="button" className={styles.addButton} onClick={handleCreateProject} disabled={busy || !projectName.trim()}>
             {busy ? "Menyimpan..." : "Buat & Simpan Proyek"}
           </button>
-          {message && (
-            <div className={`${styles.statusMessage} ${message.type === "success" ? styles.statusSuccess : styles.statusError}`}>
-              {message.text}
-            </div>
-          )}
         </div>
 
         <div className={styles.card}>
@@ -534,6 +560,20 @@ export default function KualitasIkuClient() {
               <button type="button" className={styles.addButton} onClick={handleLoadExisting} disabled={busy || !selectedExisting}>
                 Muat Proyek
               </button>
+              <button
+                type="button"
+                className={styles.deleteProjectButton}
+                onClick={handleDeleteProject}
+                disabled={busy || !selectedExisting}
+                title="Hapus proyek simulasi ini secara permanen"
+              >
+                Hapus Proyek
+              </button>
+            </div>
+          )}
+          {message && (
+            <div className={`${styles.statusMessage} ${message.type === "success" ? styles.statusSuccess : styles.statusError}`}>
+              {message.text}
             </div>
           )}
         </div>
