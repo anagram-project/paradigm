@@ -71,8 +71,7 @@ export default function VerifikasiKoreksiClient() {
   const [verifyingKey, setVerifyingKey] = useState(null); // `${faktorId}-${status}`
   const [message, setMessage] = useState(null); // { type: 'success' | 'error', text }
   const [showMonitoring, setShowMonitoring] = useState(false);
-
-  const selectedPegawai = pegawaiList.find((p) => p.nip === nip) || null;
+  const [showKetentuan, setShowKetentuan] = useState(false);
 
   // Muat daftar pegawai sekali di awal, untuk dropdown "Pilih Pegawai".
   useEffect(() => {
@@ -261,35 +260,27 @@ export default function VerifikasiKoreksiClient() {
           </select>
         </div>
 
-        <div className={styles.topBox}>
-          <div className={styles.topLabelDark}>Anda Sedang Melakukan Verifikasi Koreksi Pegawai :</div>
-          <div className={styles.verifRow}>
-            <div className={styles.verifNamaBox}>
-              {selectedPegawai ? selectedPegawai.nama : "Nama Pegawai sedang diverifikasi"}
-            </div>
-            <button
-              type="button"
-              className={`${styles.lockButton} ${locked ? styles.lockButtonActive : ""}`}
-              onClick={handleToggleLock}
-              disabled={!nip || togglingLock || loading}
-            >
-              <span className={styles.lockIconCircle}>
-                {locked ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="4" y="10" width="16" height="10" rx="2" />
-                    <path d="M8 10V7a4 4 0 018 0" />
-                  </svg>
-                ) : (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="4" y="10" width="16" height="10" rx="2" />
-                    <path d="M8 10V7a4 4 0 018 0v3" />
-                  </svg>
-                )}
-              </span>
-              {locked ? "Buka Kunci" : "Kunci Koreksi"}
-            </button>
-          </div>
-        </div>
+        <button
+          type="button"
+          className={`${styles.lockBox} ${locked ? styles.lockBoxActive : ""}`}
+          onClick={handleToggleLock}
+          disabled={!nip || togglingLock || loading}
+        >
+          <span className={styles.lockIconCircle}>
+            {locked ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="4" y="10" width="16" height="10" rx="2" />
+                <path d="M8 10V7a4 4 0 018 0" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="4" y="10" width="16" height="10" rx="2" />
+                <path d="M8 10V7a4 4 0 018 0v3" />
+              </svg>
+            )}
+          </span>
+          {locked ? "Buka Kunci" : "Kunci Koreksi"}
+        </button>
 
         <div className={styles.topBox}>
           <div className={styles.topLabel}>
@@ -301,6 +292,22 @@ export default function VerifikasiKoreksiClient() {
           </div>
           <button type="button" className={styles.monitoringButton} onClick={() => setShowMonitoring(true)}>
             Buka Monitoring
+          </button>
+        </div>
+
+        <div className={styles.topBox}>
+          <div className={styles.topLabel}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cobalt)" strokeWidth="2">
+              <path d="M14.5 3.5l6 6" />
+              <path d="M2 21h10" />
+              <path d="M5 15l6-6 3 3-6 6z" />
+              <path d="M13 9l3-3" />
+              <path d="M9 15l-3 3" />
+            </svg>
+            Ketentuan Koreksi Nilai
+          </div>
+          <button type="button" className={styles.monitoringButton} onClick={() => setShowKetentuan(true)}>
+            Baca Ketentuan
           </button>
         </div>
       </div>
@@ -482,6 +489,29 @@ export default function VerifikasiKoreksiClient() {
             </div>
             <div className={styles.modalBody}>
               <MonitoringKoreksiDashboard />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showKetentuan && (
+        <div className={styles.modalOverlay} onClick={() => setShowKetentuan(false)}>
+          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <div className={styles.modalTitle}>Ketentuan Koreksi Nilai</div>
+              <button type="button" className={styles.modalClose} onClick={() => setShowKetentuan(false)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+              </button>
+            </div>
+            <div className={styles.ketentuanBox}>
+              <strong>Ketentuan umum :</strong>
+              <ol>
+                <li>Naskah Dinas yang sudah pernah digunakan pada periode sebelumnya, tidak dapat digunakan kembali.</li>
+                <li>Naskah Dinas hanya dapat digunakan pada 1 faktor saja.</li>
+                <li>File Naskah Dinas diunggah format PDF &amp; max size 0,5 MB.</li>
+              </ol>
             </div>
           </div>
         </div>

@@ -88,44 +88,28 @@
   cursor: not-allowed;
 }
 
-/* Kartu ke-3: identitas pegawai yang sedang diverifikasi + tombol kunci */
-.verifRow {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.verifNamaBox {
-  flex: 1;
-  min-width: 0;
-  background: var(--cobalt);
-  color: var(--white);
-  border-radius: 8px;
-  padding: 9px 14px;
-  font-weight: 700;
-  font-size: 13px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.lockButton {
-  flex-shrink: 0;
+/* Kotak "Kunci Koreksi" tersendiri — seluruh kotak berperan sebagai tombol */
+.lockBox {
+  flex: 0 0 150px;
+  min-width: 130px;
+  background: var(--ice);
+  border: none;
+  border-radius: 14px;
+  padding: 16px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
+  justify-content: center;
+  gap: 8px;
   cursor: pointer;
-  color: var(--cobalt);
-  font-size: 10.5px;
-  font-weight: 700;
-  width: 74px;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
 }
 
-.lockButton:disabled {
-  opacity: 0.5;
+.lockBox:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
@@ -140,12 +124,13 @@
   justify-content: center;
 }
 
-.lockButtonActive .lockIconCircle {
-  background: #DC2626;
+.lockBoxActive {
+  background: #FCE7E7;
+  color: #B3261E;
 }
 
-.lockButtonActive {
-  color: #DC2626;
+.lockBoxActive .lockIconCircle {
+  background: #DC2626;
 }
 
 /* Kartu ke-4: monitoring */
@@ -289,10 +274,10 @@
   letter-spacing: 0.03em;
 }
 
-/* Kartu kuning "Verifikasi" di bawah judul Faktor — centang/tolak per Faktor */
+/* Kartu biru muda "Verifikasi" di bawah judul Faktor — centang/tolak per Faktor */
 .verifyBox {
   margin-top: 14px;
-  background: var(--amber);
+  background: var(--ice);
   border-radius: 12px;
   padding: 10px 14px 12px;
   display: flex;
@@ -500,4 +485,26 @@
 
 .modalClose:hover {
   background: var(--ice);
+}
+
+/* Isi modal "Ketentuan Koreksi Nilai" — sama dengan kotak ketentuan di
+   halaman Manajemen Koreksi Nilai milik pegawai */
+.ketentuanBox {
+  background: var(--badge-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  font-size: 13px;
+  color: var(--navy);
+  line-height: 1.7;
+}
+
+.ketentuanBox strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.ketentuanBox ol {
+  margin: 0;
+  padding-left: 18px;
 }
