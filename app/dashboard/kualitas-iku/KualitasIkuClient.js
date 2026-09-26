@@ -1,31 +1,32 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styles from "./page.module.css";
 
 // =====================================================================
 // Referensi rumus: simulasi ini dibangun berdasarkan materi internal
-// "Nilai Kualitas Komitmen Kinerja (K3)" & "Simulasi Penghitungan NKP
+// "Nilai Kualitas Komitmen Kinerja (K3)", "Penentuan Bobot Kualitas IKU
+// Lama", "Perubahan Ketentuan Jumlah IKU", & "Simulasi Penghitungan NKP
 // Awal" (KMK Nomor 127 Tahun 2026) yang dikonfirmasi bersama LO Subdit.
 // Semua angka contoh pada materi tsb (NHK 105,17 -> kalibrasi 103,87;
 // NPK 100,71 -> kalibrasi 100,54; NKP Awal 103,04) sudah dicocokkan
-// dengan rumus di bawah ini — layout tabelnya mengikuti susunan yang
-// diminta, tapi rumus & ketentuannya TIDAK diubah dari versi sebelumnya.
+// dengan rumus di bawah ini.
 //
 // Catatan penting yang BELUM ada rumus resminya di materi yang diterima:
 // - Cara persis Nilai Kualitas IKU digabung dengan Bobot Kualitas Target
 //   menjadi satu "Nilai K3" -> disepakati dipakai RATA-RATA sederhana.
 // - Bobot Kualitas Target untuk IKU BARU (belum ada histori Y-1) -> belum
 //   ada aturan baku, sehingga di sini disediakan input manual (default 1).
-// - Batas angka pasti tiap pita Bobot Kualitas Target IKU Lama (mis. rasio
-//   presisi antar Target Y / Realisasi Y-1 / Target Y-1) tidak dicantumkan
-//   pada materi berupa diagram — sehingga LO memilih sendiri pita yang
-//   paling sesuai dengan kondisi datanya (skenario A/B ditentukan otomatis
-//   dari angka Target Y-1 & Realisasi Y-1 yang diisi, tapi pita presisinya
-//   tetap dipilih manual).
-// - "Indeks Capaian Y" pada tabel 1.B sengaja tetap input manual (tidak
-//   diotomatisasi dari Target Y & Real Y) karena rumus & pembulatan
-//   resminya tidak tercantum pada materi yang diterima.
+// - Diagram "Penentuan Bobot Kualitas IKU Lama" hanya memberi 2 titik
+//   acuan (Target Y-1 & Realisasi Y-1) untuk menentukan 5 pita (skenario
+//   "baik") atau 3 pita (skenario "meleset") bobot 0,8-1,2. Pembagian
+//   pita di ANTARA kedua titik acuan tsb (mis. batas pasti 1,1 vs 1,0)
+//   tidak dicantumkan angkanya secara eksplisit, sehingga di sini dibagi
+//   rata (proporsional linear) di antara kedua titik acuan tersebut.
+// - Rumus Indeks Capaian Y dihitung sederhana = (Realisasi Y / Target Y)
+//   x 100, dibulatkan turun ke maksimal 120 sesuai arahan Anda — belum
+//   memperhitungkan penyesuaian arah untuk IKU Minimize (rumus resminya
+//   tidak tercantum pada materi yang diterima).
 // Karena itu, hasil dari halaman ini adalah SIMULASI / alat bantu estimasi,
 // bukan nilai resmi. Nilai resmi tetap mengacu pada aplikasi manajemen
 // kinerja Kemenkeu dan keputusan Tim Penilai Kinerja.
@@ -43,8 +44,6 @@ const KENDALI_OPTIONS = [
   { value: "high", label: "High (H)" },
 ];
 
-// Tabel Nilai Kualitas IKU: kombinasi Validitas x Kendali. `null` berarti
-// kombinasi tsb tidak berlaku (sesuai sel hitam pada materi).
 const KUALITAS_IKU_TABLE = {
   exact: { low: 1.2, moderate: 1.15, high: null },
   proxy: { low: 1.1, moderate: 1, high: 0.9 },
@@ -57,64 +56,35 @@ const POLARISASI_OPTIONS = [
   { value: "stabilize", label: "Stabilize" },
 ];
 
-// Skenario A/B tiap polarisasi (ditentukan otomatis dari Target Y-1 &
-// Realisasi Y-1), beserta 5 pita Bobot Kualitas Target IKU Lama-nya.
-const TARGET_BANDS = {
-  maximize: {
-    A: {
-      label: "Realisasi Y-1 ≥ Target Y-1",
-      bands: [
-        { value: 1.2, label: "Target Y > Real Y-1 (paling menantang)" },
-        { value: 1.1, label: "Target Y mendekati Real Y-1 (sedikit di bawah)" },
-        { value: 1.0, label: "Target Y di tengah Real Y-1 & Target Y-1" },
-        { value: 0.9, label: "Target Y mendekati Target Y-1 (sedikit di atas)" },
-        { value: 0.8, label: "Target Y ≤ Target Y-1 (paling tidak menantang)" },
-      ],
-    },
-    B: {
-      label: "Realisasi Y-1 < Target Y-1",
-      bands: [
-        { value: 0.8, label: "Target Y ≥ Target Y-1 (paling tidak menantang)" },
-        { value: 0.9, label: "Target Y mendekati Target Y-1 (sedikit di bawah)" },
-        { value: 1.0, label: "Target Y di tengah Target Y-1 & Real Y-1" },
-        { value: 1.1, label: "Target Y mendekati Real Y-1 (sedikit di atas)" },
-        { value: 1.2, label: "Target Y ≤ Real Y-1 (paling menantang)" },
-      ],
-    },
-  },
-  minimize: {
-    A: {
-      label: "Realisasi Y-1 ≤ Target Y-1",
-      bands: [
-        { value: 0.8, label: "Target Y ≥ Target Y-1 (paling tidak menantang)" },
-        { value: 0.9, label: "Target Y mendekati Target Y-1 (sedikit di bawah)" },
-        { value: 1.0, label: "Target Y di tengah Target Y-1 & Real Y-1" },
-        { value: 1.1, label: "Target Y mendekati Real Y-1 (sedikit di atas)" },
-        { value: 1.2, label: "Target Y < Real Y-1 (paling menantang)" },
-      ],
-    },
-    B: {
-      label: "Realisasi Y-1 > Target Y-1",
-      bands: [
-        { value: 1.2, label: "Target Y ≤ Real Y-1 (paling menantang)" },
-        { value: 1.1, label: "Target Y mendekati Real Y-1 (sedikit di atas)" },
-        { value: 1.0, label: "Target Y di tengah Real Y-1 & Target Y-1" },
-        { value: 0.9, label: "Target Y mendekati Target Y-1 (sedikit di bawah)" },
-        { value: 0.8, label: "Target Y ≥ Target Y-1 (paling tidak menantang)" },
-      ],
-    },
-  },
+const KEDUDUKAN_OPTIONS = [
+  { value: "pimpinan_upk", label: "Pimpinan UPK" },
+  { value: "non_pimpinan_upk", label: "Non Pimpinan UPK" },
+];
+
+const JABATAN_SKP_OPTIONS = [
+  { value: "ppt_madya", label: "PPT Madya" },
+  { value: "ppt_pratama", label: "PPT Pratama dan JF yang bertanggung jawab kepada Pimpinan UPK-One" },
+  { value: "administrator", label: "Pejabat Administrator dan JF yang setara" },
+  { value: "pengawas", label: "Pejabat Pengawas dan JF yang setara" },
+  { value: "pelaksana", label: "Pelaksana dan JF yang setara" },
+];
+
+// Batas jumlah IKU sesuai materi "Perubahan Ketentuan Jumlah IKU". Untuk
+// Pimpinan UPK, sesuai arahan Anda, dipakai angka tetap 10-20 IKU untuk
+// semua jenjang jabatan (tidak mengikuti kolom Pimpinan UPK pada tabel
+// aslinya yang berbeda-beda per jenjang / "sesuai jumlah RHK").
+const NON_PIMPINAN_LIMITS = {
+  ppt_madya: { min: 3, max: 10 },
+  ppt_pratama: { min: 3, max: 10 },
+  administrator: { min: 3, max: 8 },
+  pengawas: { min: 3, max: 7 },
+  pelaksana: { min: 3, max: 6 },
 };
 
-const CORE_VALUES = [
-  { key: "berorientasiPelayanan", label: "Berorientasi Pelayanan" },
-  { key: "akuntabel", label: "Akuntabel" },
-  { key: "kompeten", label: "Kompeten" },
-  { key: "harmonis", label: "Harmonis" },
-  { key: "loyal", label: "Loyal" },
-  { key: "adaptif", label: "Adaptif" },
-  { key: "kolaboratif", label: "Kolaboratif" },
-];
+function getIkuLimits(kedudukan, jabatanSkp) {
+  if (kedudukan === "pimpinan_upk") return { min: 10, max: 20 };
+  return NON_PIMPINAN_LIMITS[jabatanSkp] || null;
+}
 
 function calibrate115(value) {
   if (value <= 100) return value;
@@ -141,57 +111,277 @@ function emptyRow() {
     stabilizeMemenuhiKriteria: false,
     mandatory: false,
     bobotBaruManual: 1,
-    indeksCapaian: 100,
+    indeksCapaian: "",
     jumlahHari: 91,
   };
 }
 
-// Menghitung semua nilai turunan (Nilai Kualitas IKU, skenario, Bobot
-// Kualitas Target, Nilai K3) dari satu baris IKI.
+// --- Penentuan otomatis Bobot Kualitas Target IKU Lama (Maximize/Minimize) ---
+// Lihat catatan rumus di atas berkas ini soal bagaimana pita di antara
+// kedua titik acuan (Target Y-1 & Realisasi Y-1) dibagi.
+function computeMaximizeBobot(targetY, targetY1, realY1) {
+  const t = Number(targetY);
+  const t1 = Number(targetY1);
+  const r1 = Number(realY1);
+  if (!Number.isFinite(t) || !Number.isFinite(t1) || !Number.isFinite(r1)) return { bobot: null, skenario: null };
+  if (r1 >= t1) {
+    // Skenario A (5 pita): realisasi tahun lalu tercapai/terlampaui.
+    if (t > r1) return { bobot: 1.2, skenario: "A" };
+    if (t <= t1) {
+      const step = (r1 - t1) / 2 || 1;
+      return { bobot: t1 - t <= step ? 0.9 : 0.8, skenario: "A" };
+    }
+    const mid = (r1 + t1) / 2;
+    return { bobot: t > mid ? 1.1 : 1.0, skenario: "A" };
+  }
+  // Skenario B (3 pita): target tahun lalu tidak tercapai.
+  if (t > t1) return { bobot: 1.2, skenario: "B" };
+  if (t < r1) return { bobot: 0.8, skenario: "B" };
+  return { bobot: 1.0, skenario: "B" };
+}
+
+function computeMinimizeBobot(targetY, targetY1, realY1) {
+  const t = Number(targetY);
+  const t1 = Number(targetY1);
+  const r1 = Number(realY1);
+  if (!Number.isFinite(t) || !Number.isFinite(t1) || !Number.isFinite(r1)) return { bobot: null, skenario: null };
+  if (r1 <= t1) {
+    // Skenario A (5 pita): realisasi tahun lalu tercapai/terlampaui.
+    if (t >= t1) return { bobot: 0.8, skenario: "A" };
+    if (t <= r1) {
+      const step = (t1 - r1) / 2 || 1;
+      return { bobot: r1 - t <= step ? 1.1 : 1.2, skenario: "A" };
+    }
+    const mid = (t1 + r1) / 2;
+    return { bobot: t > mid ? 0.9 : 1.0, skenario: "A" };
+  }
+  // Skenario B (3 pita): target tahun lalu tidak tercapai.
+  if (t >= r1) return { bobot: 0.8, skenario: "B" };
+  if (t < t1) return { bobot: 1.2, skenario: "B" };
+  return { bobot: 1.0, skenario: "B" };
+}
+
 function computeRow(r) {
   const nilaiKualitasIku = r.validitas && r.kendali ? KUALITAS_IKU_TABLE[r.validitas][r.kendali] : null;
 
-  let skenario = null;
-  if (
-    r.jenisHistoris === "lama" &&
-    (r.polarisasi === "maximize" || r.polarisasi === "minimize") &&
-    r.targetY1 !== "" &&
-    r.realY1 !== ""
-  ) {
-    const t1 = Number(r.targetY1);
-    const re1 = Number(r.realY1);
-    if (r.polarisasi === "maximize") skenario = re1 >= t1 ? "A" : "B";
-    else skenario = re1 <= t1 ? "A" : "B";
-  }
-  const bandOptions = skenario ? TARGET_BANDS[r.polarisasi][skenario].bands : [];
-
   let bobotTarget = null;
+  let skenario = null;
+
   if (r.jenisHistoris === "baru") {
     bobotTarget = Number(r.bobotBaruManual) || 1;
   } else if (r.polarisasi === "stabilize") {
     bobotTarget = r.stabilizeMemenuhiKriteria ? 1.2 : 1;
-  } else if (r.bandValue != null) {
-    bobotTarget = r.bandValue;
+  } else if (r.targetY1 !== "" && r.realY1 !== "" && r.targetY !== "") {
+    const fn = r.polarisasi === "maximize" ? computeMaximizeBobot : computeMinimizeBobot;
+    const res = fn(r.targetY, r.targetY1, r.realY1);
+    bobotTarget = res.bobot;
+    skenario = res.skenario;
   }
+
   if (bobotTarget != null && r.mandatory) {
     bobotTarget = Math.max(bobotTarget, 1);
   }
 
   const nilaiK3 = nilaiKualitasIku != null && bobotTarget != null ? round2((nilaiKualitasIku + bobotTarget) / 2) : null;
 
-  return { ...r, nilaiKualitasIku, skenario, bandOptions, bobotTarget, nilaiK3 };
+  // Indeks Capaian Y = (Realisasi Y / Target Y) x 100, dibulatkan maks 120.
+  const ty = Number(r.targetY);
+  const ry = Number(r.realY);
+  let indeksCapaianY = null;
+  if (Number.isFinite(ty) && ty > 0 && Number.isFinite(ry)) {
+    indeksCapaianY = Math.min(120, round2((ry / ty) * 100));
+  }
+
+  return { ...r, nilaiKualitasIku, bobotTarget, skenario, nilaiK3, indeksCapaianY };
 }
 
 export default function KualitasIkuClient() {
+  // --- Wizard: nama proyek -> jabatan pemilik SKP -> simulasi ---
+  const [projectName, setProjectName] = useState("");
+  const [projectSaved, setProjectSaved] = useState(false);
+  const [jabatanConfirmed, setJabatanConfirmed] = useState(false);
+  const [kedudukan, setKedudukan] = useState("");
+  const [jabatanSkp, setJabatanSkp] = useState("");
+
+  const [projectList, setProjectList] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [selectedExisting, setSelectedExisting] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState(null);
+
   const [jabatanScale, setJabatanScale] = useState("lain"); // 'tinggi' | 'lain'
   const [ikiList, setIkiList] = useState([]);
-  const [npkValues, setNpkValues] = useState(CORE_VALUES.reduce((acc, cv) => ({ ...acc, [cv.key]: 100 }), {}));
+  const [npkValues, setNpkValues] = useState(
+    ["berorientasiPelayanan", "akuntabel", "kompeten", "harmonis", "loyal", "adaptif", "kolaboratif"].reduce(
+      (acc, k) => ({ ...acc, [k]: 100 }),
+      {}
+    )
+  );
+
+  const CORE_VALUES = [
+    { key: "berorientasiPelayanan", label: "Berorientasi Pelayanan" },
+    { key: "akuntabel", label: "Akuntabel" },
+    { key: "kompeten", label: "Kompeten" },
+    { key: "harmonis", label: "Harmonis" },
+    { key: "loyal", label: "Loyal" },
+    { key: "adaptif", label: "Adaptif" },
+    { key: "kolaboratif", label: "Kolaboratif" },
+  ];
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadList() {
+      setLoadingProjects(true);
+      try {
+        const res = await fetch("/api/kualitas-iku/list");
+        const data = await res.json();
+        if (!cancelled && res.ok) setProjectList(data.projects || []);
+      } catch {
+        // diamkan, dropdown akan tampil kosong
+      } finally {
+        if (!cancelled) setLoadingProjects(false);
+      }
+    }
+    loadList();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const limits = getIkuLimits(kedudukan, jabatanSkp);
+
+  async function handleCreateProject() {
+    if (!projectName.trim()) return;
+    setBusy(true);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/kualitas-iku/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectName: projectName.trim(),
+          kedudukan: "",
+          jabatanSkp: "",
+          jabatanScale,
+          minIku: "",
+          maxIku: "",
+          ikiList: [],
+          npkValues,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error || "Gagal menyimpan proyek." });
+        return;
+      }
+      setProjectSaved(true);
+      setMessage({ type: "success", text: `Proyek "${projectName.trim()}" berhasil dibuat & disimpan.` });
+    } catch {
+      setMessage({ type: "error", text: "Tidak bisa terhubung ke server." });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleLoadExisting() {
+    if (!selectedExisting) return;
+    setBusy(true);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/kualitas-iku/load?project=${encodeURIComponent(selectedExisting)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error || "Gagal memuat proyek." });
+        return;
+      }
+      const p = data.data;
+      setProjectName(p.projectName);
+      setKedudukan(p.kedudukan || "");
+      setJabatanSkp(p.jabatanSkp || "");
+      setJabatanScale(p.jabatanScale || "lain");
+      setIkiList(p.ikiList || []);
+      setNpkValues((prev) => ({ ...prev, ...p.npkValues }));
+      setProjectSaved(true);
+      setJabatanConfirmed(!!(p.kedudukan && p.jabatanSkp));
+      setMessage({ type: "success", text: `Proyek "${p.projectName}" berhasil dimuat.` });
+    } catch {
+      setMessage({ type: "error", text: "Tidak bisa terhubung ke server." });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleConfirmJabatan() {
+    if (!kedudukan || !jabatanSkp) return;
+    setBusy(true);
+    setMessage(null);
+    try {
+      const lim = getIkuLimits(kedudukan, jabatanSkp);
+      const res = await fetch("/api/kualitas-iku/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectName,
+          kedudukan,
+          jabatanSkp,
+          jabatanScale,
+          minIku: lim?.min ?? "",
+          maxIku: lim?.max ?? "",
+          ikiList,
+          npkValues,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error || "Gagal menyimpan." });
+        return;
+      }
+      setJabatanConfirmed(true);
+      setMessage(null);
+    } catch {
+      setMessage({ type: "error", text: "Tidak bisa terhubung ke server." });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleSaveProgress() {
+    setBusy(true);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/kualitas-iku/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectName,
+          kedudukan,
+          jabatanSkp,
+          jabatanScale,
+          minIku: limits?.min ?? "",
+          maxIku: limits?.max ?? "",
+          ikiList,
+          npkValues,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error || "Gagal menyimpan." });
+        return;
+      }
+      setMessage({ type: "success", text: "Perubahan berhasil disimpan." });
+    } catch {
+      setMessage({ type: "error", text: "Tidak bisa terhubung ke server." });
+    } finally {
+      setBusy(false);
+    }
+  }
 
   function updateRow(id, patch) {
     setIkiList((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   }
 
   function addRow() {
+    if (limits && ikiList.length >= limits.max) return;
     setIkiList((prev) => [...prev, emptyRow()]);
   }
 
@@ -206,7 +396,7 @@ export default function KualitasIkuClient() {
     const totalHari = withK3.reduce((sum, r) => sum + (Number(r.jumlahHari) || 0), 0);
     const withKualitas = withK3.map((r) => ({
       ...r,
-      nilaiKualitasCapaian: (Number(r.indeksCapaian) || 0) * r.nilaiK3,
+      nilaiKualitasCapaian: (Number(r.indeksCapaianY) || 0) * r.nilaiK3,
       bobotWaktu: totalHari > 0 ? (Number(r.jumlahHari) || 0) / totalHari : 0,
     }));
     const withIntermediate = withKualitas.map((r) => ({ ...r, intermediate: r.nilaiK3 * r.bobotWaktu }));
@@ -226,15 +416,152 @@ export default function KualitasIkuClient() {
 
   const nkpAwal = 0.75 * nhkFinal + 0.25 * npkFinal;
 
+  // ===================== STEP A: Nama Proyek =====================
+  if (!projectSaved) {
+    return (
+      <div className={styles.wrap}>
+        <div className={styles.disclaimerBanner}>
+          Halaman ini adalah <strong>simulator/alat bantu estimasi</strong> Nilai K3, NHK, NPK, dan NKP Awal
+          berdasarkan pemahaman bersama atas KMK Nomor 127 Tahun 2026 — bukan nilai resmi.
+        </div>
+        <div className={styles.card}>
+          <div className={styles.cardTitle}>Mulai Proyek Simulasi Baru</div>
+          <div className={styles.field}>
+            <label className={styles.fieldLabel}>Nama Proyek Simulasi</label>
+            <input
+              type="text"
+              className={styles.textInput}
+              placeholder="mis. Simulasi K3 Triwulan III 2026 - Subdit X"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+            />
+          </div>
+          <button type="button" className={styles.addButton} onClick={handleCreateProject} disabled={busy || !projectName.trim()}>
+            {busy ? "Menyimpan..." : "Buat & Simpan Proyek"}
+          </button>
+          {message && (
+            <div className={`${styles.statusMessage} ${message.type === "success" ? styles.statusSuccess : styles.statusError}`}>
+              {message.text}
+            </div>
+          )}
+        </div>
+
+        <div className={styles.card}>
+          <div className={styles.cardTitle}>Atau Lanjutkan Proyek Tersimpan</div>
+          {loadingProjects ? (
+            <div className={styles.hintText}>Memuat daftar proyek...</div>
+          ) : projectList.length === 0 ? (
+            <div className={styles.hintText}>Belum ada proyek simulasi tersimpan.</div>
+          ) : (
+            <div className={styles.periodeControls}>
+              <select className={styles.selectInput} value={selectedExisting} onChange={(e) => setSelectedExisting(e.target.value)}>
+                <option value="">Pilih proyek...</option>
+                {projectList.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+              <button type="button" className={styles.addButton} onClick={handleLoadExisting} disabled={busy || !selectedExisting}>
+                Muat Proyek
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ===================== STEP B: Jabatan Pemilik SKP =====================
+  if (!jabatanConfirmed) {
+    return (
+      <div className={styles.wrap}>
+        <div className={styles.sectionBar}>Proyek: {projectName}</div>
+        <div className={styles.card}>
+          <div className={styles.cardTitle}>Jabatan Pemilik SKP</div>
+          <div className={styles.hintText}>
+            Menentukan batas jumlah minimal &amp; maksimal IKU yang boleh diisi pada simulasi ini.
+          </div>
+          <div className={styles.formGrid}>
+            <div className={styles.field}>
+              <label className={styles.fieldLabel}>Kedudukan</label>
+              <select className={styles.selectInput} value={kedudukan} onChange={(e) => setKedudukan(e.target.value)}>
+                <option value="">Pilih kedudukan</option>
+                {KEDUDUKAN_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.field}>
+              <label className={styles.fieldLabel}>Jenis Jabatan</label>
+              <select className={styles.selectInput} value={jabatanSkp} onChange={(e) => setJabatanSkp(e.target.value)}>
+                <option value="">Pilih jenis jabatan</option>
+                {JABATAN_SKP_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {limits && (
+            <div className={styles.resultBadge}>
+              Batas jumlah IKU untuk kombinasi ini: minimal <strong>{limits.min}</strong>, maksimal{" "}
+              <strong>{limits.max}</strong> IKU.
+            </div>
+          )}
+          <button
+            type="button"
+            className={styles.addButton}
+            onClick={handleConfirmJabatan}
+            disabled={busy || !kedudukan || !jabatanSkp}
+          >
+            {busy ? "Menyimpan..." : "Simpan & Lanjutkan ke Simulasi"}
+          </button>
+          {message && (
+            <div className={`${styles.statusMessage} ${message.type === "success" ? styles.statusSuccess : styles.statusError}`}>
+              {message.text}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ===================== STEP C: Simulasi =====================
+  const ikuCount = ikiList.length;
+  const outOfRange = limits && (ikuCount < limits.min || ikuCount > limits.max);
+
   return (
     <div className={styles.wrap}>
+      <div className={styles.projectBar}>
+        <div>
+          <strong>{projectName}</strong>
+          <span className={styles.hintTextSmall}>
+            {" "}
+            &middot; {KEDUDUKAN_OPTIONS.find((o) => o.value === kedudukan)?.label} &middot;{" "}
+            {JABATAN_SKP_OPTIONS.find((o) => o.value === jabatanSkp)?.label}
+          </span>
+        </div>
+        <button type="button" className={styles.addRowLink} onClick={handleSaveProgress} disabled={busy}>
+          {busy ? "Menyimpan..." : "Simpan Perubahan"}
+        </button>
+      </div>
+
+      {message && (
+        <div className={`${styles.statusMessage} ${message.type === "success" ? styles.statusSuccess : styles.statusError}`}>
+          {message.text}
+        </div>
+      )}
+
       <div className={styles.disclaimerBanner}>
         Halaman ini adalah <strong>simulator/alat bantu estimasi</strong> Nilai K3, NHK, NPK, dan NKP Awal
         berdasarkan pemahaman bersama atas KMK Nomor 127 Tahun 2026. Beberapa detail (cara persis Nilai
-        Kualitas IKU digabung dengan Bobot Kualitas Target, aturan IKU baru, batas angka presisi tiap pita
-        target, dan rumus Indeks Capaian Y) belum tercantum rumus resminya pada materi yang diterima,
-        sehingga nilai di sini <strong>bersifat perkiraan</strong> — nilai resmi tetap mengacu pada aplikasi
-        manajemen kinerja Kemenkeu dan keputusan Tim Penilai Kinerja.
+        Kualitas IKU digabung dengan Bobot Kualitas Target, aturan IKU baru, pembagian pita di antara Target
+        Y-1 &amp; Realisasi Y-1, dan rumus Indeks Capaian Y untuk IKU Minimize) belum tercantum rumus resminya
+        pada materi yang diterima, sehingga nilai di sini <strong>bersifat perkiraan</strong>.
       </div>
 
       <div className={styles.card}>
@@ -253,6 +580,11 @@ export default function KualitasIkuClient() {
 
       <div className={styles.sectionBar}>1.A. Tambah IKI &amp; Hitung Nilai K3</div>
       <div className={styles.card}>
+        {limits && (
+          <div className={`${styles.limitBanner} ${outOfRange ? styles.limitBannerWarning : ""}`}>
+            Jumlah IKU: <strong>{ikuCount}</strong> (ketentuan: minimal {limits.min}, maksimal {limits.max} IKU)
+          </div>
+        )}
         <div className={styles.tableScroll}>
           <table className={styles.editTable}>
             <thead>
@@ -290,11 +622,7 @@ export default function KualitasIkuClient() {
                       />
                     </td>
                     <td>
-                      <select
-                        className={styles.cellSelect}
-                        value={r.validitas}
-                        onChange={(e) => updateRow(r.id, { validitas: e.target.value })}
-                      >
+                      <select className={styles.cellSelect} value={r.validitas} onChange={(e) => updateRow(r.id, { validitas: e.target.value })}>
                         <option value="">-</option>
                         {VALIDITAS_OPTIONS.map((o) => (
                           <option key={o.value} value={o.value}>
@@ -304,11 +632,7 @@ export default function KualitasIkuClient() {
                       </select>
                     </td>
                     <td>
-                      <select
-                        className={styles.cellSelect}
-                        value={r.kendali}
-                        onChange={(e) => updateRow(r.id, { kendali: e.target.value })}
-                      >
+                      <select className={styles.cellSelect} value={r.kendali} onChange={(e) => updateRow(r.id, { kendali: e.target.value })}>
                         <option value="">-</option>
                         {KENDALI_OPTIONS.map((o) => {
                           const invalid = r.validitas && KUALITAS_IKU_TABLE[r.validitas][o.value] == null;
@@ -339,7 +663,7 @@ export default function KualitasIkuClient() {
                       <select
                         className={styles.cellSelect}
                         value={r.jenisHistoris}
-                        onChange={(e) => updateRow(r.id, { jenisHistoris: e.target.value, bandValue: null })}
+                        onChange={(e) => updateRow(r.id, { jenisHistoris: e.target.value })}
                       >
                         <option value="lama">Lama</option>
                         <option value="baru">Baru</option>
@@ -352,7 +676,7 @@ export default function KualitasIkuClient() {
                         style={{ width: 80 }}
                         disabled={!isLama || !isMaxMin}
                         value={r.targetY1}
-                        onChange={(e) => updateRow(r.id, { targetY1: e.target.value, bandValue: null })}
+                        onChange={(e) => updateRow(r.id, { targetY1: e.target.value })}
                       />
                     </td>
                     <td>
@@ -362,7 +686,7 @@ export default function KualitasIkuClient() {
                         style={{ width: 80 }}
                         disabled={!isLama || !isMaxMin}
                         value={r.realY1}
-                        onChange={(e) => updateRow(r.id, { realY1: e.target.value, bandValue: null })}
+                        onChange={(e) => updateRow(r.id, { realY1: e.target.value })}
                       />
                     </td>
                     <td>
@@ -398,40 +722,23 @@ export default function KualitasIkuClient() {
                           <option value="tidak">Standar (bobot 1)</option>
                           <option value="ya">Memenuhi kriteria khusus (bobot 1,2)</option>
                         </select>
-                      ) : r.skenario ? (
-                        <select
-                          className={styles.cellSelect}
-                          style={{ minWidth: 220 }}
-                          value={r.bandValue ?? ""}
-                          onChange={(e) => updateRow(r.id, { bandValue: Number(e.target.value) })}
-                        >
-                          <option value="">Pilih posisi Target Y</option>
-                          {r.bandOptions.map((b) => (
-                            <option key={b.value} value={b.value} title={b.label}>
-                              {b.label} (bobot {b.value})
-                            </option>
-                          ))}
-                        </select>
+                      ) : r.bobotTarget != null ? (
+                        <span className={styles.computedCellStrong}>
+                          {r.bobotTarget} <span className={styles.hintTextSmall}>(Skenario {r.skenario})</span>
+                        </span>
                       ) : (
-                        <span className={styles.hintTextSmall}>Isi Target Y-1 &amp; Real Y-1</span>
+                        <span className={styles.hintTextSmall}>Isi Target Y-1, Real Y-1 &amp; Target Y</span>
                       )}
-                      <label className={styles.mandatoryCheck} title="IKU Mandatory dari level Kementerian (bobot minimal 1)">
-                        <input
-                          type="checkbox"
-                          checked={r.mandatory}
-                          onChange={(e) => updateRow(r.id, { mandatory: e.target.checked })}
-                        />
-                        Mandatory
-                      </label>
+                      {r.jenisHistoris === "lama" && r.polarisasi !== "stabilize" && (
+                        <label className={styles.mandatoryCheck} title="IKU Mandatory dari level Kementerian (bobot minimal 1)">
+                          <input type="checkbox" checked={r.mandatory} onChange={(e) => updateRow(r.id, { mandatory: e.target.checked })} />
+                          Mandatory
+                        </label>
+                      )}
                     </td>
                     <td className={styles.computedCellStrong}>{r.nilaiK3 ?? "-"}</td>
                     <td>
-                      <button
-                        type="button"
-                        className={styles.deleteRowButton}
-                        title="Hapus baris ini"
-                        onClick={() => deleteRow(r.id)}
-                      >
+                      <button type="button" className={styles.deleteRowButton} title="Hapus baris ini" onClick={() => deleteRow(r.id)}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M6 6l12 12M18 6L6 18" />
                         </svg>
@@ -444,7 +751,12 @@ export default function KualitasIkuClient() {
           </table>
         </div>
 
-        <button type="button" className={styles.addRowLink} onClick={addRow}>
+        <button
+          type="button"
+          className={styles.addRowLink}
+          onClick={addRow}
+          disabled={limits && ikuCount >= limits.max}
+        >
           + tambah IKU baru
         </button>
       </div>
@@ -488,15 +800,7 @@ export default function KualitasIkuClient() {
                           onChange={(e) => updateRow(r.id, { realY: e.target.value })}
                         />
                       </td>
-                      <td>
-                        <input
-                          type="number"
-                          className={styles.cellInput}
-                          style={{ width: 70 }}
-                          value={r.indeksCapaian}
-                          onChange={(e) => updateRow(r.id, { indeksCapaian: e.target.value })}
-                        />
-                      </td>
+                      <td className={styles.computedCell}>{r.indeksCapaianY ?? "-"}</td>
                       <td>{r.nilaiK3 ?? "-"}</td>
                       <td>{withCalc ? round2(withCalc.nilaiKualitasCapaian) : "-"}</td>
                       <td>
@@ -524,8 +828,7 @@ export default function KualitasIkuClient() {
             Nilai Hasil Kerja (NHK): <strong>{round2(nhk)}</strong>
           </div>
           <div>
-            NHK {jabatanScale === "tinggi" ? "(skala 120, tanpa kalibrasi)" : "Kalibrasi 115"}:{" "}
-            <strong>{round2(nhkFinal)}</strong>
+            NHK {jabatanScale === "tinggi" ? "(skala 120, tanpa kalibrasi)" : "Kalibrasi 115"}: <strong>{round2(nhkFinal)}</strong>
           </div>
         </div>
       </div>
