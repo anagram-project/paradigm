@@ -168,7 +168,10 @@ function computeRow(r) {
   let skenario = null;
 
   if (r.jenisHistoris === "baru") {
-    bobotTarget = Number(r.bobotBaruManual) || 1;
+    // IKU baru (tanpa histori Target/Realisasi Y-1): belum ada aturan resmi
+    // di materi yang diterima, sehingga Kualitas Target IKU ditetapkan tetap
+    // 1 (netral) dan tidak dibuat sebagai isian manual.
+    bobotTarget = 1;
   } else if (r.polarisasi === "stabilize") {
     bobotTarget = r.stabilizeMemenuhiKriteria ? 1.2 : 1;
   } else if (r.targetY1 !== "" && r.realY1 !== "" && r.targetY !== "") {
@@ -694,24 +697,19 @@ export default function KualitasIkuClient() {
                         type="number"
                         className={styles.cellInput}
                         style={{ width: 80 }}
-                        disabled={r.jenisHistoris === "baru"}
+                        title="Target Y selalu dapat diisi — dipakai sebagai pembagi Indeks Capaian Y pada 1.B"
                         value={r.targetY}
                         onChange={(e) => updateRow(r.id, { targetY: e.target.value })}
                       />
                     </td>
                     <td>
                       {r.jenisHistoris === "baru" ? (
-                        <input
-                          type="number"
-                          step="0.05"
-                          min="0.6"
-                          max="1.2"
-                          className={styles.cellInput}
-                          style={{ width: 80 }}
-                          title="Belum ada aturan resmi untuk IKU baru — isi manual"
-                          value={r.bobotBaruManual}
-                          onChange={(e) => updateRow(r.id, { bobotBaruManual: e.target.value })}
-                        />
+                        <span
+                          className={styles.computedCellStrong}
+                          title="Belum ada aturan resmi untuk IKU baru pada materi yang diterima — ditetapkan netral (1)"
+                        >
+                          1 <span className={styles.hintTextSmall}>(IKU Baru)</span>
+                        </span>
                       ) : r.polarisasi === "stabilize" ? (
                         <select
                           className={styles.cellSelect}
