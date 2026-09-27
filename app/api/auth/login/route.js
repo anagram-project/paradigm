@@ -39,6 +39,17 @@ export async function POST(request) {
       jabatan: user.jabatan,
       unitKerja: user.unitKerja,
       role: user.role,
+      // Unit eselon disertakan di sesi (bukan cuma diambil ulang dari sheet
+      // tiap request) supaya endpoint yang membatasi akses per-Subdit (mis.
+      // Verifikasi Koreksi Nilai & Update Data Pegawai khusus LO Subdit)
+      // bisa langsung membandingkan tanpa lookup tambahan. Konsekuensinya:
+      // kalau Es3/Es2/Es4 pegawai berubah di sheet, sesi yang sedang aktif
+      // baru mengikuti setelah login ulang (maks 8 jam, sama seperti field
+      // sesi lain seperti nama/jabatan).
+      es4: user.es4,
+      es3: user.es3,
+      es2: user.es2,
+      es1: user.es1,
     });
 
     const response = NextResponse.json({

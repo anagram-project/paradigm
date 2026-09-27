@@ -53,6 +53,41 @@
   background: var(--card-bg);
 }
 
+.textInput,
+.selectInput {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--navy);
+  background: var(--card-bg);
+}
+
+.textInput:disabled,
+.selectInput:disabled {
+  background: #EEF2F7;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.selectInput {
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
 .addButton {
   align-self: flex-start;
   background: var(--cobalt);
