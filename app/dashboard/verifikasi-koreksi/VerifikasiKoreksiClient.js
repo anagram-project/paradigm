@@ -73,6 +73,16 @@ export default function VerifikasiKoreksiClient() {
   const [showMonitoring, setShowMonitoring] = useState(false);
   const [showKetentuan, setShowKetentuan] = useState(false);
 
+  // Edit/hapus/unggah Bukti Dukung oleh LO Subdit/Admin KKPA (menggantikan
+  // form yang sebelumnya read-only) — SENGAJA tidak digembok oleh `locked`,
+  // karena justru saat data terkunci itulah LO/Admin biasanya melakukan
+  // verifikasi & koreksi bukti dukung. Nama pegawai yang sedang dipilih
+  // (bukan cuma NIP) diambil dari pegawaiList untuk dikirim ke Drive.
+  const [editingFaktor, setEditingFaktor] = useState({});
+  const [savingFaktor, setSavingFaktor] = useState({});
+  const [uploadingKey, setUploadingKey] = useState(null);
+  const [deletingKey, setDeletingKey] = useState(null);
+
   // Muat daftar pegawai sekali di awal, untuk dropdown "Pilih Pegawai".
   useEffect(() => {
     let cancelled = false;
@@ -97,6 +107,7 @@ export default function VerifikasiKoreksiClient() {
   // Muat data bukti dukung + status kunci/verifikasi tiap kali pegawai atau
   // periode yang dipilih berubah.
   useEffect(() => {
+    setEditingFaktor({});
     if (!nip) {
       setEntries(emptyEntries());
       setFaktorStatus(emptyFaktorStatus());
@@ -200,6 +211,121 @@ export default function VerifikasiKoreksiClient() {
       setMessage({ type: "error", text: "Tidak bisa terhubung ke server." });
     } finally {
       setVerifyingKey(null);
+    }
+  }
+
+  function updateJudul(faktorId, nomor, value) {
+    setEntries((prev) => ({
+      ...prev,
+      [`${faktorId}-${nomor}`]: { ...prev[`${faktorId}-${nomor}`], judul: value },
+    }));
+  }
+
+  function toggleEdit(faktorId) {
+    if (!nip) return;
+    setEditingFaktor((prev) => ({ ...prev, [faktorId]: !prev[faktorId] }));
+  }
+
+  async function handleSimpanFaktor(faktorId) {
+    if (!nip) return;
+    setSavingFaktor((prev) => ({ ...prev, [faktorId]: true }));
+    setMessage(null);
+    try {
+      for (const nomor of NOMOR_LIST) {
+        const judul = entries[`${faktorId}-${nomor}`]?.judul?.trim();
+        if (!judul) continue; // baris kosong dilewati, tidak wajib semua diisi.
+        const res = await fetch("/api/verifikasi-koreksi/text", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nip, periode, faktor: faktorId, nomorUrut: nomor, judul }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setMessage({ type: "error", text: data.error || "Gagal menyimpan." });
+          setSavingFaktor((prev) => ({ ...prev, [faktorId]: false }));
+          return;
+        }
+      }
+      setMessage({ type: "success", text: `Faktor ${faktorId} tersimpan.` });
+      setEditingFaktor((prev) => ({ ...prev, [faktorId]: false }));
+    } catch {
+      setMessage({ type: "error", text: "Tidak bisa terhubung ke server." });
+    } finally {
+      setSavingFaktor((prev) => ({ ...prev, [faktorId]: false }));
+    }
+  }
+
+  async function handleUpload(faktorId, nomor, file) {
+    if (!file || !nip) return;
+    const key = `${faktorId}-${nomor}`;
+
+    if (file.type !== "application/pdf") {
+      setMessage({ type: "error", text: "File harus berformat PDF." });
+      return;
+    }
+    if (file.size > 0.5 * 1024 * 1024) {
+      setMessage({ type: "error", text: "Ukuran file melebihi 0,5 MB." });
+      return;
+    }
+
+    setUploadingKey(key);
+    setMessage(null);
+    try {
+      const formData = new FormData();
+      formData.append("nip", nip);
+      formData.append("periode", periode);
+      formData.append("faktor", faktorId);
+      formData.append("nomorUrut", nomor);
+      formData.append("file", file);
+
+      const res = await fetch("/api/verifikasi-koreksi/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error || "Gagal mengunggah file." });
+        return;
+      }
+      setEntries((prev) => ({
+        ...prev,
+        [key]: { ...prev[key], linkFile: data.linkFile, namaFile: data.namaFile },
+      }));
+      setMessage({ type: "success", text: "File naskah dinas berhasil diunggah." });
+    } catch {
+      setMessage({ type: "error", text: "Tidak bisa terhubung ke server." });
+    } finally {
+      setUploadingKey(null);
+    }
+  }
+
+  async function handleDelete(faktorId, nomor) {
+    if (!nip) return;
+    const key = `${faktorId}-${nomor}`;
+    const entry = entries[key];
+    if (!entry?.judul && !entry?.linkFile) return; // slot sudah kosong, tidak ada yang dihapus
+
+    const konfirmasi = window.confirm(
+      `Hapus Bukti Dukung & No ND ${nomor} pada Faktor ${faktorId}? Judul dan file naskah dinas yang sudah diunggah akan dihapus permanen.`
+    );
+    if (!konfirmasi) return;
+
+    setDeletingKey(key);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/verifikasi-koreksi/entry", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nip, periode, faktor: faktorId, nomorUrut: nomor }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error || "Gagal menghapus." });
+        return;
+      }
+      setEntries((prev) => ({ ...prev, [key]: { judul: "", linkFile: "", namaFile: "" } }));
+      setMessage({ type: "success", text: `Bukti Dukung & No ND ${nomor} pada Faktor ${faktorId} berhasil dihapus.` });
+    } catch {
+      setMessage({ type: "error", text: "Tidak bisa terhubung ke server." });
+    } finally {
+      setDeletingKey(null);
     }
   }
 
@@ -341,14 +467,17 @@ export default function VerifikasiKoreksiClient() {
       {FAKTOR_DEFS.map((faktor) => {
         const status = faktorStatus[faktor.id];
         const busy = verifyingKey === `${faktor.id}-disetujui` || verifyingKey === `${faktor.id}-ditolak`;
+        const isEditing = !!editingFaktor[faktor.id];
+        const isSaving = !!savingFaktor[faktor.id];
         return (
           <div key={faktor.id} className={styles.faktorCard}>
             <div className={styles.faktorActions}>
               <button
                 type="button"
                 className={styles.iconButton}
-                title="Fitur edit langsung oleh LO akan segera hadir"
-                disabled
+                title={!nip ? "Pilih pegawai terlebih dahulu" : "Simpan"}
+                onClick={() => handleSimpanFaktor(faktor.id)}
+                disabled={!nip || isSaving || loading}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
@@ -358,8 +487,9 @@ export default function VerifikasiKoreksiClient() {
               <button
                 type="button"
                 className={styles.iconButton}
-                title="Fitur edit langsung oleh LO akan segera hadir"
-                disabled
+                title={!nip ? "Pilih pegawai terlebih dahulu" : isEditing ? "Batal edit" : "Edit"}
+                onClick={() => toggleEdit(faktor.id)}
+                disabled={!nip || loading}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 20h9" />
@@ -419,6 +549,9 @@ export default function VerifikasiKoreksiClient() {
               {NOMOR_LIST.map((nomor) => {
                 const key = `${faktor.id}-${nomor}`;
                 const entry = entries[key] || { judul: "", linkFile: "", namaFile: "" };
+                const isUploading = uploadingKey === key;
+                const isDeleting = deletingKey === key;
+                const inputId = `verifikasi-upload-${key}`;
 
                 return (
                   <div key={nomor} className={styles.faktorRow}>
@@ -429,8 +562,8 @@ export default function VerifikasiKoreksiClient() {
                         className={styles.judulInput}
                         placeholder={`Tulis Judul Bukti Dukung & No ND ${nomor} di sini`}
                         value={entry.judul}
-                        disabled
-                        readOnly
+                        disabled={!isEditing || loading}
+                        onChange={(e) => updateJudul(faktor.id, nomor, e.target.value)}
                       />
                     </div>
 
@@ -444,22 +577,34 @@ export default function VerifikasiKoreksiClient() {
                           `Judul file naskah dinas ${nomor} akan muncul di sini`
                         )}
                       </div>
-                      <button
-                        type="button"
+                      <input
+                        id={inputId}
+                        type="file"
+                        accept="application/pdf"
+                        className={styles.hiddenFileInput}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          handleUpload(faktor.id, nomor, file);
+                          e.target.value = "";
+                        }}
+                      />
+                      <label
+                        htmlFor={inputId}
                         className={styles.uploadButton}
-                        title="Fitur unggah oleh LO akan segera hadir"
-                        disabled
+                        title={!nip ? "Pilih pegawai terlebih dahulu" : "Unggah file PDF"}
+                        style={isUploading || !nip ? { pointerEvents: "none", opacity: 0.6 } : undefined}
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FAFAFA" strokeWidth="2">
                           <path d="M12 16V4M7 9l5-5 5 5" />
                           <path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3" />
                         </svg>
-                      </button>
+                      </label>
                       <button
                         type="button"
                         className={styles.deleteButton}
-                        title="Fitur hapus oleh LO akan segera hadir"
-                        disabled
+                        title={!nip ? "Pilih pegawai terlebih dahulu" : "Hapus bukti dukung ini"}
+                        onClick={() => handleDelete(faktor.id, nomor)}
+                        disabled={!nip || isDeleting || (!entry.judul && !entry.linkFile)}
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M3 6h18" />

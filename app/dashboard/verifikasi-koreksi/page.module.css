@@ -371,7 +371,12 @@
   padding: 10px 14px;
   font-size: 13px;
   color: var(--navy);
+  background: var(--card-bg);
+}
+
+.judulInput:disabled {
   background: #EEF2F7;
+  color: var(--muted);
 }
 
 .uploadRow {
@@ -434,6 +439,14 @@
 .deleteButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.deleteButton:hover {
+  background: #FCA5A5;
+}
+
+.hiddenFileInput {
+  display: none;
 }
 
 /* Modal Monitoring */
