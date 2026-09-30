@@ -33,10 +33,39 @@ const FAKTOR_DEFS = [
 ];
 const NOMOR_LIST = ["1", "2", "3"];
 
-// Isi tabel "Ketentuan Teknis" — kriteria penilaian resmi untuk tiap Faktor
-// Penentu Penambah Nilai Koreksi, ditampilkan sebagai popup referensi
-// (tidak memengaruhi data/API, murni konten statis).
-const KETENTUAN_TEKNIS = [
+// Isi popup "Ketentuan Teknis": kriteria penambah & pengurang nilai koreksi,
+// masing-masing berupa daftar kriteria umum + tabel Faktor Penilaian resmi.
+// Murni konten statis (tidak memengaruhi data/API).
+const HUKDIS_PERIODE = [
+  { tingkat: "Berat", periode: "2 Tahun Terakhir" },
+  { tingkat: "Sedang", periode: "1 Tahun Terakhir" },
+  { tingkat: "Ringan", periode: "6 Bulan Terakhir" },
+];
+
+const KRITERIA_PENAMBAH_LIST = [
+  { withTable: true, text: "Tidak Dijatuhi Hukuman Disiplin pada :" },
+  {
+    text: "Memberikan kontribusi yang luar biasa atas pencapaian kinerja satuan kerja yang menghasilkan output strategis bagi organisasi yang digunakan untuk pemecahan masalah, perbaikan kebijakan, metode, proses kerja, dan/atau optimalisasi pengelolaan keuangan negara,",
+  },
+  {
+    text: "Meraih prestasi yang istimewa dari Kementerian Keuangan dan/atau pihak eksternal di lingkup nasional/internasional atas usahanya yang berdampak langsung untuk kemajuan unit kerja dan organisasi,",
+  },
+  { text: "Menunjukkan konsistensi dalam tindakan rela berkorban untuk kepentingan organisasi, dan/atau" },
+  { text: "kualitas kinerja lebih tinggi dibandingkan dengan para pegawai dalam jenjang jabatan yang sama pada unit kerja." },
+];
+
+const KRITERIA_PENGURANGAN_LIST = [
+  { withTable: true, text: "Terdapat Hukuman Disiplin pada :" },
+  {
+    text: "Tingkat kontribusi pegawai atas tercapainya IKI yang dimiliki pegawai bersangkutan (menjadi free rider atau tidak), atau fakta kinerja lebih rendah dari nilai kinerja",
+  },
+  {
+    text: "Adanya keluhan/pengaduan masyarakat/ mitra kerja/pengguna layanan terhadap kinerja/pelayanan/perilaku pegawai bersangkutan dan telah terbukti, dan/atau",
+  },
+  { text: "Kualitas kinerja lebih rendah dibandingkan dengan para pegawai dalam jenjang jabatan yang sama pada unit kerja." },
+];
+
+const KETENTUAN_TEKNIS_PENAMBAH = [
   {
     faktor: "1",
     judul: "Kontribusi Luar Biasa terhadap Output Strategis Organisasi",
@@ -72,6 +101,45 @@ const KETENTUAN_TEKNIS = [
     kriteria1: "Sedikit di atas rata-rata dibanding pegawai pada jenjang jabatan yang sama",
     kriteria2: "Signifikan di atas dibanding pegawai pada jenjang jabatan yang sama",
     dokumen: "Penjelasan/analisis perbandingan kinerja yang menunjukkan bahwa kinerja pegawai yang bersangkutan lebih tinggi dibandingkan pegawai selevel, disertai data/bukti pendukung yang relevan",
+  },
+];
+
+const KETENTUAN_TEKNIS_PENGURANGAN = [
+  {
+    faktor: "1",
+    judul: "Riwayat Hukuman Disiplin",
+    indikator: "Riwayat hukuman disiplin dalam periode yang dipersyaratkan",
+    kriteria0: "Tidak memiliki riwayat hukuman disiplin",
+    kriteria1: "Memiliki riwayat hukuman disiplin ringan/sedang sesuai periode penilaian",
+    kriteria2: "Memiliki riwayat hukuman disiplin berat atau pelanggaran disiplin yang berulang",
+    dokumen: "Salinan SK Penetapan Hukuman Disiplin",
+  },
+  {
+    faktor: "2",
+    judul: "Kontribusi terhadap Pencapaian IKI",
+    indikator: "Tingkat kontribusi pegawai terhadap target kinerja unit",
+    kriteria0: "Kontribusi sesuai target dan peran, serta tidak terdapat indikasi free rider",
+    kriteria1: "Kontribusi di bawah rata-rata atau terdapat indikasi free rider pada sebagian pekerjaan",
+    kriteria2: "Kontribusi jauh di bawah ekspektasi atau terbukti menjadi free rider pada sebagian besar pekerjaan",
+    dokumen: "Laporan, data, dan/atau testimoni yang menunjukkan indikasi kontribusi minimal (free rider)",
+  },
+  {
+    faktor: "3",
+    judul: "Keluhan/Pengaduan yang Terbukti",
+    indikator: "Keluhan/pengaduan yang telah ditindaklanjuti dan dinyatakan terbukti",
+    kriteria0: "Tidak terdapat keluhan/pengaduan yang terbukti",
+    kriteria1: "Terdapat keluhan/pengaduan yang berdampak terbatas terhadap pelayanan",
+    kriteria2: "Terdapat keluhan/pengaduan yang berdampak signifikan terhadap pelayanan atau reputasi unit kerja",
+    dokumen: "Hasil verifikasi/pemeriksaan dan/atau Berita Acara (BA) atas aduan masyarakat, mitra kerja, dan/atau stakeholder yang telah terbukti",
+  },
+  {
+    faktor: "4",
+    judul: "Kualitas Kinerja Dibandingkan Pegawai Selevel",
+    indikator: "Perbandingan capaian kinerja dengan pegawai pada jenjang jabatan yang sama",
+    kriteria0: "Setara atau lebih tinggi dibandingkan rata-rata pegawai selevel",
+    kriteria1: "Sedikit di bawah rata-rata dibandingkan rata-rata pegawai selevel",
+    kriteria2: "Signifikan di bawah dibandingkan rata-rata pegawai selevel",
+    dokumen: "Penjelasan dan data perbandingan kinerja yang menunjukkan bahwa kinerja pegawai yang bersangkutan lebih rendah dibandingkan pegawai selevel, yang dituangkan dalam BA Sidang TPK",
   },
 ];
 
@@ -285,6 +353,13 @@ export default function KoreksiNilaiPage() {
               </svg>
             </button>
           </div>
+          <div
+            className={`${styles.usulanStatus} ${
+              locked ? styles.usulanStatusSudah : styles.usulanStatusBelum
+            }`}
+          >
+            Status Usulan: {locked ? "Sudah Diusulkan LO Subdit" : "Belum Diusulkan LO Subdit"}
+          </div>
         </div>
 
         <div className={styles.ketentuanBox}>
@@ -301,9 +376,9 @@ export default function KoreksiNilaiPage() {
           <ol>
             <li>Nilai Koreksi TIDAK Bersifat Wajib dan merupakan hasil keputusan Sidang TPK oleh Pimpinan UPK-Two dan Seluruh Pimpinan UPK-Three.</li>
             <li>Unggah Dokumen Pendukung sesuai &quot;Ketentuan Teknis&quot; yang telah disediakan.</li>
-            <li>Dokumen Pendukung hanya dapat digunakan pada 1 periode Triwulan saja.</li>
-            <li>Dokumen Pendukung hanya dapat digunakan pada 1 faktor saja.</li>
-            <li>File Naskah Dinas diunggah format PDF &amp; max size 0,5 MB.</li>
+            <li>Dokumen Pendukung/Naskah Dinas hanya dapat digunakan pada 1 periode Triwulan saja.</li>
+            <li>Dokumen Pendukung/Naskah Dinas hanya dapat digunakan pada 1 faktor saja.</li>
+            <li>File Dokumen Pendukung/Naskah Dinas diunggah format PDF &amp; max size 0,5 MB.</li>
           </ol>
         </div>
       </div>
@@ -453,7 +528,7 @@ export default function KoreksiNilaiPage() {
         <div className={styles.modalOverlay} onClick={() => setShowKetentuanTeknis(false)}>
           <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <div className={styles.modalTitle}>Ketentuan Teknis — Faktor Penentu Penambah Nilai Koreksi</div>
+              <div className={styles.modalTitle}>Ketentuan Teknis — Kriteria Koreksi Nilai</div>
               <button
                 type="button"
                 className={styles.modalClose}
@@ -464,47 +539,157 @@ export default function KoreksiNilaiPage() {
                 </svg>
               </button>
             </div>
-            <div className={styles.tableScroll}>
-              <table className={styles.ketentuanTable}>
-                <thead>
-                  <tr>
-                    <th>Faktor Penilaian</th>
-                    <th>Indikator</th>
-                    <th>
-                      Kriteria 0
-                      <br />
-                      (Tidak Terpenuhi)
-                    </th>
-                    <th>
-                      Kriteria 1
-                      <br />
-                      (Terpenuhi Cukup)
-                    </th>
-                    <th>
-                      Kriteria 2
-                      <br />
-                      (Terpenuhi Signifikan)
-                    </th>
-                    <th>Dokumen Pendukung</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {KETENTUAN_TEKNIS.map((row) => (
-                    <tr key={row.faktor}>
-                      <td className={styles.faktorCell}>
-                        <strong>Faktor {row.faktor}</strong>
-                        <br />
-                        {row.judul}
-                      </td>
-                      <td>{row.indikator}</td>
-                      <td>{row.kriteria0}</td>
-                      <td>{row.kriteria1}</td>
-                      <td>{row.kriteria2}</td>
-                      <td>{row.dokumen}</td>
-                    </tr>
+
+            <div className={styles.kriteriaColumns}>
+              <div className={`${styles.kriteriaPanel} ${styles.kriteriaPanelTambah}`}>
+                <div className={styles.kriteriaPanelHeader}>
+                  <span className={`${styles.kriteriaPanelIcon} ${styles.kriteriaPanelIconTambah}`}>+</span>
+                  <span className={styles.kriteriaPanelTitle}>Kriteria Penambah Nilai</span>
+                </div>
+                <ol className={styles.kriteriaList}>
+                  {KRITERIA_PENAMBAH_LIST.map((item, idx) => (
+                    <li key={idx}>
+                      <span className={styles.kriteriaListText}>{item.text}</span>
+                      {item.withTable && (
+                        <table className={`${styles.hukdisTable} ${styles.hukdisTableTambah}`}>
+                          <thead>
+                            <tr>
+                              <th>Tingkat Hukdis</th>
+                              <th>Periode</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {HUKDIS_PERIODE.map((row) => (
+                              <tr key={row.tingkat}>
+                                <td>{row.tingkat}</td>
+                                <td>{row.periode}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </li>
                   ))}
-                </tbody>
-              </table>
+                </ol>
+
+                <div className={styles.tableScroll}>
+                  <table className={styles.ketentuanTable}>
+                    <thead>
+                      <tr>
+                        <th>Faktor Penilaian</th>
+                        <th>Indikator</th>
+                        <th>
+                          Kriteria 0
+                          <br />
+                          (Tidak Terpenuhi)
+                        </th>
+                        <th>
+                          Kriteria 1
+                          <br />
+                          (Terpenuhi Cukup)
+                        </th>
+                        <th>
+                          Kriteria 2
+                          <br />
+                          (Terpenuhi Signifikan)
+                        </th>
+                        <th>Dokumen Pendukung</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {KETENTUAN_TEKNIS_PENAMBAH.map((row) => (
+                        <tr key={row.faktor}>
+                          <td className={styles.faktorCell}>
+                            <strong>Faktor {row.faktor}</strong>
+                            <br />
+                            {row.judul}
+                          </td>
+                          <td>{row.indikator}</td>
+                          <td>{row.kriteria0}</td>
+                          <td>{row.kriteria1}</td>
+                          <td>{row.kriteria2}</td>
+                          <td>{row.dokumen}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className={`${styles.kriteriaPanel} ${styles.kriteriaPanelKurang}`}>
+                <div className={styles.kriteriaPanelHeader}>
+                  <span className={`${styles.kriteriaPanelIcon} ${styles.kriteriaPanelIconKurang}`}>&minus;</span>
+                  <span className={styles.kriteriaPanelTitle}>Kriteria Pengurangan Nilai</span>
+                </div>
+                <ol className={styles.kriteriaList}>
+                  {KRITERIA_PENGURANGAN_LIST.map((item, idx) => (
+                    <li key={idx}>
+                      <span className={styles.kriteriaListText}>{item.text}</span>
+                      {item.withTable && (
+                        <table className={`${styles.hukdisTable} ${styles.hukdisTableKurang}`}>
+                          <thead>
+                            <tr>
+                              <th>Tingkat Hukdis</th>
+                              <th>Periode</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {HUKDIS_PERIODE.map((row) => (
+                              <tr key={row.tingkat}>
+                                <td>{row.tingkat}</td>
+                                <td>{row.periode}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+
+                <div className={styles.tableScroll}>
+                  <table className={styles.ketentuanTable}>
+                    <thead>
+                      <tr>
+                        <th>Faktor Penilaian</th>
+                        <th>Indikator</th>
+                        <th>
+                          Kriteria 0
+                          <br />
+                          (Tidak Terpenuhi)
+                        </th>
+                        <th>
+                          Kriteria 1
+                          <br />
+                          (Terpenuhi Cukup)
+                        </th>
+                        <th>
+                          Kriteria 2
+                          <br />
+                          (Terpenuhi Signifikan)
+                        </th>
+                        <th>Dokumen Pendukung</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {KETENTUAN_TEKNIS_PENGURANGAN.map((row) => (
+                        <tr key={row.faktor}>
+                          <td className={styles.faktorCell}>
+                            <strong>Faktor {row.faktor}</strong>
+                            <br />
+                            {row.judul}
+                          </td>
+                          <td>{row.indikator}</td>
+                          <td>{row.kriteria0}</td>
+                          <td>{row.kriteria1}</td>
+                          <td>{row.kriteria2}</td>
+                          <td>{row.dokumen}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>
