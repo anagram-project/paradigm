@@ -93,6 +93,130 @@
   padding-left: 18px;
 }
 
+.ketentuanHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.ketentuanHeader strong {
+  margin-bottom: 0;
+}
+
+.ketentuanTeknisButton {
+  flex-shrink: 0;
+  background: var(--cobalt);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ketentuanTeknisButton:hover {
+  background: var(--navy);
+}
+
+/* Modal "Ketentuan Teknis" */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 36, 85, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 50;
+}
+
+.modalCard {
+  background: var(--white);
+  border-radius: 16px;
+  width: min(1200px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 20px 24px 24px;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.modalTitle {
+  font-weight: 800;
+  color: var(--navy);
+  font-size: 16px;
+}
+
+.modalClose {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: var(--badge-bg);
+  color: var(--cobalt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.modalClose:hover {
+  background: var(--ice);
+}
+
+.tableScroll {
+  overflow-x: auto;
+}
+
+.ketentuanTable {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  color: var(--navy);
+}
+
+.ketentuanTable th,
+.ketentuanTable td {
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.ketentuanTable thead th {
+  background: var(--ice);
+  color: var(--cobalt);
+  font-weight: 800;
+  text-align: center;
+}
+
+.ketentuanTable tbody tr:nth-child(odd) {
+  background: var(--card-bg);
+}
+
+.faktorCell {
+  background: #FEF3D7;
+  font-weight: 700;
+  min-width: 170px;
+}
+
+.faktorCell strong {
+  color: var(--navy);
+}
+
 /* Pesan status (sukses/error) */
 .statusMessage {
   border-radius: 10px;

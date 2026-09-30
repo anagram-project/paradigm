@@ -33,6 +33,48 @@ const FAKTOR_DEFS = [
 ];
 const NOMOR_LIST = ["1", "2", "3"];
 
+// Isi tabel "Ketentuan Teknis" — kriteria penilaian resmi untuk tiap Faktor
+// Penentu Penambah Nilai Koreksi, ditampilkan sebagai popup referensi
+// (tidak memengaruhi data/API, murni konten statis).
+const KETENTUAN_TEKNIS = [
+  {
+    faktor: "1",
+    judul: "Kontribusi Luar Biasa terhadap Output Strategis Organisasi",
+    indikator: "Memberikan kontribusi di luar tugas jabatan yang menghasilkan output strategis bagi unit kerja/organisasi",
+    kriteria0: "Tidak terdapat kontribusi strategis di luar tugas jabatan",
+    kriteria1: "Kontribusi berdampak pada unit kerja",
+    kriteria2: "Kontribusi berdampak lintas unit/DJPb/Kementerian Keuangan",
+    dokumen: "Output strategis, antara lain Nota Dinas (ND), laporan/kajian/analisis, konsep kebijakan, atau inovasi/perbaikan proses bisnis",
+  },
+  {
+    faktor: "2",
+    judul: "Prestasi Istimewa Tingkat Nasional/Internasional",
+    indikator: "Memperoleh penghargaan atas kontribusi terhadap organisasi pada tingkat internal, nasional, atau internasional",
+    kriteria0: "Tidak ada penghargaan/prestasi yang relevan",
+    kriteria1: "Penghargaan tingkat internal Kementerian Keuangan/DJPb dengan dampak langsung bagi unit kerja/organisasi",
+    kriteria2: "Penghargaan tingkat nasional/internasional atau dari instansi eksternal yang berdampak pada organisasi",
+    dokumen: "Piagam, sertifikat, atau penghargaan resmi dari Kementerian Keuangan maupun pihak eksternal pada level nasional/internasional",
+  },
+  {
+    faktor: "3",
+    judul: "Konsistensi Rela Berkorban untuk Organisasi",
+    indikator: "Menunjukkan dedikasi di luar tugas formal secara konsisten untuk mendukung kepentingan organisasi",
+    kriteria0: "Tidak menunjukkan pola konsisten yang terdokumentasi",
+    kriteria1: "Terdapat 1–2 kejadian terdokumentasi dalam periode penilaian",
+    kriteria2: "Dilakukan secara konsisten sepanjang periode penilaian dan dapat dibuktikan memberikan dampak bagi organisasi",
+    dokumen: "Bukti konsistensi rela berkorban, antara lain ST penugasan khusus, laporan kegiatan, dan bukti kehadiran/presensi di luar jam kerja normal",
+  },
+  {
+    faktor: "4",
+    judul: "Kualitas Kinerja Dibanding Pegawai Selevel",
+    indikator: "Capaian dan kualitas kinerja dibandingkan dengan pegawai pada jenjang jabatan yang sama",
+    kriteria0: "Setara/tidak menonjol dibanding pegawai pada jenjang jabatan yang sama",
+    kriteria1: "Sedikit di atas rata-rata dibanding pegawai pada jenjang jabatan yang sama",
+    kriteria2: "Signifikan di atas dibanding pegawai pada jenjang jabatan yang sama",
+    dokumen: "Penjelasan/analisis perbandingan kinerja yang menunjukkan bahwa kinerja pegawai yang bersangkutan lebih tinggi dibandingkan pegawai selevel, disertai data/bukti pendukung yang relevan",
+  },
+];
+
 function emptyEntries() {
   const map = {};
   FAKTOR_DEFS.forEach((f) => {
@@ -52,6 +94,7 @@ export default function KoreksiNilaiPage() {
   const [savingFaktor, setSavingFaktor] = useState({});
   const [uploadingKey, setUploadingKey] = useState(null);
   const [deletingKey, setDeletingKey] = useState(null);
+  const [showKetentuanTeknis, setShowKetentuanTeknis] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState(null); // { type: 'success' | 'error', text }
 
@@ -245,10 +288,21 @@ export default function KoreksiNilaiPage() {
         </div>
 
         <div className={styles.ketentuanBox}>
-          <strong>Ketentuan umum :</strong>
+          <div className={styles.ketentuanHeader}>
+            <strong>Ketentuan umum :</strong>
+            <button
+              type="button"
+              className={styles.ketentuanTeknisButton}
+              onClick={() => setShowKetentuanTeknis(true)}
+            >
+              Baca Ketentuan Teknis
+            </button>
+          </div>
           <ol>
-            <li>Naskah Dinas yang sudah pernah digunakan pada periode sebelumnya, tidak dapat digunakan kembali.</li>
-            <li>Naskah Dinas hanya dapat digunakan pada 1 faktor saja.</li>
+            <li>Nilai Koreksi TIDAK Bersifat Wajib dan merupakan hasil keputusan Sidang TPK oleh Pimpinan UPK-Two dan Seluruh Pimpinan UPK-Three.</li>
+            <li>Unggah Dokumen Pendukung sesuai &quot;Ketentuan Teknis&quot; yang telah disediakan.</li>
+            <li>Dokumen Pendukung hanya dapat digunakan pada 1 periode Triwulan saja.</li>
+            <li>Dokumen Pendukung hanya dapat digunakan pada 1 faktor saja.</li>
             <li>File Naskah Dinas diunggah format PDF &amp; max size 0,5 MB.</li>
           </ol>
         </div>
@@ -394,6 +448,67 @@ export default function KoreksiNilaiPage() {
           </div>
         );
       })}
+
+      {showKetentuanTeknis && (
+        <div className={styles.modalOverlay} onClick={() => setShowKetentuanTeknis(false)}>
+          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <div className={styles.modalTitle}>Ketentuan Teknis — Faktor Penentu Penambah Nilai Koreksi</div>
+              <button
+                type="button"
+                className={styles.modalClose}
+                onClick={() => setShowKetentuanTeknis(false)}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className={styles.tableScroll}>
+              <table className={styles.ketentuanTable}>
+                <thead>
+                  <tr>
+                    <th>Faktor Penilaian</th>
+                    <th>Indikator</th>
+                    <th>
+                      Kriteria 0
+                      <br />
+                      (Tidak Terpenuhi)
+                    </th>
+                    <th>
+                      Kriteria 1
+                      <br />
+                      (Terpenuhi Cukup)
+                    </th>
+                    <th>
+                      Kriteria 2
+                      <br />
+                      (Terpenuhi Signifikan)
+                    </th>
+                    <th>Dokumen Pendukung</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {KETENTUAN_TEKNIS.map((row) => (
+                    <tr key={row.faktor}>
+                      <td className={styles.faktorCell}>
+                        <strong>Faktor {row.faktor}</strong>
+                        <br />
+                        {row.judul}
+                      </td>
+                      <td>{row.indikator}</td>
+                      <td>{row.kriteria0}</td>
+                      <td>{row.kriteria1}</td>
+                      <td>{row.kriteria2}</td>
+                      <td>{row.dokumen}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
