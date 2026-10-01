@@ -134,6 +134,16 @@ const NAV_GROUPS = [
           </svg>
         ),
       },
+      {
+        href: "/dashboard/update-timeline-kinerja",
+        label: "Update Timeline Kinerja",
+        icon: (
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="4" width="18" height="17" rx="2" />
+            <path d="M3 9h18M8 2v4M16 2v4M8 14h3M8 17.5h6" />
+          </svg>
+        ),
+      },
     ],
   },
 ];

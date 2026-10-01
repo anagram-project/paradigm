@@ -5,27 +5,51 @@ import styles from "./page.module.css";
 
 const ROMAN = ["I", "II", "III", "IV"];
 
-// Sama persis dengan daftar periode di halaman Manajemen Koreksi Nilai —
-// triwulan berjalan + 3 triwulan berikutnya, supaya pilihannya konsisten.
-function generatePeriodeOptions(jumlah = 4) {
+// Triwulan pertama sejak fitur Koreksi Nilai dipakai — dijadikan batas bawah
+// daftar periode supaya triwulan lama (yang sudah ada datanya) TIDAK PERNAH
+// hilang dari pilihan meskipun triwulan berjalan sekarang sudah berganti.
+// Sama persis dengan Manajemen Koreksi Nilai & Verifikasi Koreksi Nilai
+// (lihat koreksi-nilai/page.js) supaya daftar periode selalu konsisten di
+// Home, Verifikasi Koreksi Nilai, maupun dashboard ini sendiri.
+// quarter: 0=Triwulan I, 1=Triwulan II, 2=Triwulan III, 3=Triwulan IV.
+const PERIODE_MULAI = { year: 2026, quarter: 2 }; // Triwulan III 2026
+
+function formatPeriode(year, quarter) {
+  return `Triwulan ${ROMAN[quarter]} ${year}`;
+}
+
+function periodeSaatIni() {
   const now = new Date();
-  let q = Math.floor(now.getMonth() / 3);
-  let year = now.getFullYear();
+  return { year: now.getFullYear(), quarter: Math.floor(now.getMonth() / 3) };
+}
+
+// Menghasilkan daftar periode (triwulan), mulai dari PERIODE_MULAI (atau
+// triwulan berjalan, mana yang lebih awal) sampai `bufferKeDepan` triwulan
+// setelah triwulan berjalan saat ini. Daftar ini hanya BERTAMBAH seiring
+// waktu (triwulan baru otomatis muncul di akhir), tidak pernah mengurangi
+// triwulan lama dari daftar.
+function generatePeriodeOptions(bufferKeDepan = 3) {
+  const sekarang = periodeSaatIni();
+  const mulaiIndex = PERIODE_MULAI.year * 4 + PERIODE_MULAI.quarter;
+  const sekarangIndex = sekarang.year * 4 + sekarang.quarter;
+  const startIndex = Math.min(mulaiIndex, sekarangIndex);
+  const endIndex = sekarangIndex + bufferKeDepan;
+
   const options = [];
-  for (let i = 0; i < jumlah; i++) {
-    options.push(`Triwulan ${ROMAN[q]} ${year}`);
-    q += 1;
-    if (q > 3) {
-      q = 0;
-      year += 1;
-    }
+  for (let idx = startIndex; idx <= endIndex; idx++) {
+    options.push(formatPeriode(Math.floor(idx / 4), idx % 4));
   }
   return options;
 }
 
 export default function MonitoringKoreksiDashboard() {
   const periodeOptions = useMemo(() => generatePeriodeOptions(), []);
-  const [periode, setPeriode] = useState(periodeOptions[0]);
+  const periodeDefault = useMemo(() => {
+    const sekarang = periodeSaatIni();
+    const label = formatPeriode(sekarang.year, sekarang.quarter);
+    return periodeOptions.includes(label) ? label : periodeOptions[periodeOptions.length - 1];
+  }, [periodeOptions]);
+  const [periode, setPeriode] = useState(periodeDefault);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

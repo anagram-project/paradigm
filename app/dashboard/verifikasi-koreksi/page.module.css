@@ -499,25 +499,3 @@
 .modalClose:hover {
   background: var(--ice);
 }
-
-/* Isi modal "Ketentuan Koreksi Nilai" — sama dengan kotak ketentuan di
-   halaman Manajemen Koreksi Nilai milik pegawai */
-.ketentuanBox {
-  background: var(--badge-bg);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px 20px;
-  font-size: 13px;
-  color: var(--navy);
-  line-height: 1.7;
-}
-
-.ketentuanBox strong {
-  display: block;
-  margin-bottom: 4px;
-}
-
-.ketentuanBox ol {
-  margin: 0;
-  padding-left: 18px;
-}

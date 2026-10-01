@@ -1,0 +1,50 @@
+.ketentuanBox {
+  flex: 1;
+  min-width: 280px;
+  background: var(--badge-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  font-size: 12.5px;
+  color: var(--navy);
+  line-height: 1.7;
+}
+
+.ketentuanBox strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.ketentuanBox ol {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.ketentuanHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.ketentuanHeader strong {
+  margin-bottom: 0;
+}
+
+.ketentuanTeknisButton {
+  flex-shrink: 0;
+  background: var(--cobalt);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ketentuanTeknisButton:hover {
+  background: var(--navy);
+}

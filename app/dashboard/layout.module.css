@@ -13,7 +13,7 @@
   flex-direction: column;
   transition: width 0.2s ease;
   /* Sengaja TIDAK overflow:hidden — tombol buka/tutup (.collapseToggle)
-     posisinya nempel di tepi kanan sidebar dan sebagian keluar dari kotak
+     posisinya nempel di TEPI KANAN sidebar dan sebagian keluar dari kotak
      sidebar (right negatif). Kalau overflow di-hidden, separuh tombolnya
      ikut terpotong/ hilang. Teks yang perlu disembunyikan saat collapsed
      sudah diatur lewat rendering kondisional di JSX, jadi tidak perlu
@@ -25,14 +25,15 @@
   width: 76px;
 }
 
-/* Posisi tombol ini SENGAJA di dalam batas sidebar (right positif, bukan
-   negatif) — supaya seluruh kotaknya selalu utuh di atas latar navy sidebar,
-   tidak "nyender" ke tepi luar yang berisiko separuh badannya jatuh di area
-   putih sebelah (header/.main) dan terlihat seperti terpotong. */
+/* Tombol ini SENGAJA "nempel" tepat di garis tepi kanan sidebar (separuh di
+   dalam, separuh di luar — right negatif setengah dari lebar tombol) — bukan
+   di dalam baris logo. Dengan begitu posisinya selalu di LUAR area logo,
+   baik saat sidebar terbuka (lebar 260px) maupun tertutup (76px, logo jadi
+   di tengah) — tidak pernah menumpuk/menutupi logo di kedua kondisi. */
 .collapseToggle {
   position: absolute;
   top: 20px;
-  right: 14px;
+  right: -13px;
   width: 26px;
   height: 26px;
   border-radius: 8px;
@@ -149,7 +150,7 @@
 
 .navGroupHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   padding: 7px 12px;
   margin: 0 12px 6px;
@@ -158,7 +159,15 @@
   color: var(--navy);
   font-size: 12px;
   font-weight: 700;
-  white-space: nowrap;
+  line-height: 1.35;
+}
+
+/* Judul grup panjang dibiarkan turun ke baris berikutnya (bukan dipotong
+   jadi "..."), ikonnya tetap rata atas mengikuti baris pertama teks. */
+.navGroupHeader span {
+  white-space: normal;
+  overflow-wrap: break-word;
+  padding-top: 1px;
 }
 
 .navGroupIcon {
@@ -175,7 +184,7 @@
 
 .navItem {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding: 11px 16px;
   margin: 2px 12px;
@@ -184,7 +193,14 @@
   font-size: 13.5px;
   font-weight: 500;
   text-decoration: none;
-  white-space: nowrap;
+  line-height: 1.35;
+}
+
+/* Ikon menu tetap rata atas & ukurannya tidak pernah menyusut, walau
+   labelnya di sampingnya turun ke 2 baris. */
+.navItem svg {
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .navItemCollapsed {
@@ -193,9 +209,12 @@
   margin: 2px 14px;
 }
 
+/* Label menu/submenu yang panjang dibiarkan turun ke baris berikutnya,
+   BUKAN dipotong jadi "..." — supaya judul menu tetap terbaca penuh. */
 .navItemLabel {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: break-word;
+  padding-top: 1px;
 }
 
 .navItem:hover {

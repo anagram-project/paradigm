@@ -48,3 +48,19 @@
   flex: 1;
   min-width: 0;
 }
+
+.loadingText {
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.errorBox {
+  align-self: center;
+  background: #FCE7E7;
+  color: #B3261E;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+}

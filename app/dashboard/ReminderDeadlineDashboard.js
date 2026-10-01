@@ -1,78 +1,31 @@
 import styles from "./page.module.css";
 
-// Data statis (belum bersumber dari spreadsheet) sesuai jadwal yang
-// diberikan — silakan minta disesuaikan lagi kalau ada perubahan tanggal
-// atau tahapan.
-const ITEMS = [
-  {
-    no: 1,
-    kegiatan: "Pengusulan Evaluator",
-    rows: [{ pihak: "Seluruh pegawai", waktu: "1 s.d 7 Juli 2026" }],
-  },
-  {
-    no: 2,
-    kegiatan: "Penetapan Evaluator",
-    rows: [{ pihak: "Pejabat Penilai Kinerja", waktu: "1 s.d 10 Juli 2026" }],
-  },
-  {
-    no: 3,
-    kegiatan: "Penilaian Perilaku Kerja",
-    rows: [{ pihak: "Evaluator", waktu: "1 s.d 17 Juli 2026" }],
-  },
-  {
-    no: 4,
-    kegiatan:
-      "Pengajuan dan Penetapan Keberatan atas Nilai Perilaku Kerja (NPK) serta Penilaian Ulang atas Perilaku Kerja",
-    rows: [
-      {
-        pihak: "Evaluee, Evaluator, Pejabat Penilai Kinerja, Atasan Pejabat Penilai Kinerja",
-        waktu: "18 s.d 24 Juli 2026",
-      },
-    ],
-  },
-  {
-    no: 5,
-    kegiatan: "Rekam Realisasi IKI Pegawai",
-    rows: [{ pihak: "Seluruh pegawai", waktu: "Paling lambat 31 Juli 2026" }],
-  },
-  {
-    no: 6,
-    kegiatan: "Validasi Realisasi IKI Pegawai",
-    rows: [{ pihak: "Pejabat Penilai Kinerja", waktu: "1 s.d 10 Agustus 2026" }],
-  },
-  {
-    no: 7,
-    kegiatan: "Sidang Tim Penilai Kinerja (TPK)",
-    rows: [
-      { pihak: "UPK-Two", waktu: "Paling lambat 18 Agustus 2026" },
-      { pihak: "UPK-One", waktu: "Paling lambat 24 Agustus 2026" },
-      { pihak: "Pusat", waktu: "Paling lambat 31 Agustus 2026" },
-    ],
-  },
-  {
-    no: 8,
-    kegiatan: "Penetapan SKEP NKP Triwulan II",
-    rows: [
-      { pihak: "Pimpinan UPK-Two", waktu: "Paling lambat 20 Agustus 2026" },
-      { pihak: "Pimpinan UPK-One", waktu: "Paling lambat 26 Agustus 2026" },
-      { pihak: "Sekretaris Jenderal a.n Menkeu", waktu: "Paling lambat 10 September 2026" },
-    ],
-  },
-  {
-    no: 9,
-    kegiatan: "Penetapan DEK dan HEK Triwulan I",
-    rows: [{ pihak: "Pegawai dan Pejabat Penilai Kinerja", waktu: "Paling lambat 10 September 2026" }],
-  },
-  {
-    no: 10,
-    kegiatan: "Penetapan DEK dan HEK Triwulan II",
-    rows: [{ pihak: "Pegawai dan Pejabat Penilai Kinerja", waktu: "Dimulai 11 September 2026" }],
-    urgent: true,
-  },
-];
+// Komponen presentasi murni — tidak lagi menyimpan data statis sendiri.
+// Datanya (per periode) diambil pemanggilnya lewat lib/timelineKinerja.js
+// (Home, Server Component) atau lewat /api/timeline (halaman Timeline
+// Kinerja Triwulanan, Client Component), lalu dioper sebagai prop `items`.
+// Baris dengan "no" yang SAMA & berurutan digabung jadi satu Kegiatan
+// dengan beberapa Pihak/Waktu (rowSpan) — lihat groupByNo di bawah.
 
-export default function ReminderDeadlineDashboard({ title = "Reminder Deadline Evaluasi Kinerja" }) {
-  const urgentItem = ITEMS.find((item) => item.urgent);
+function groupByNo(items) {
+  const groups = [];
+  let current = null;
+  items.forEach((item) => {
+    if (current && current.no === item.no) {
+      current.rows.push(item);
+      if (item.urgent) current.urgent = true;
+    } else {
+      current = { no: item.no, kegiatan: item.kegiatan, urgent: !!item.urgent, rows: [item] };
+      groups.push(current);
+    }
+  });
+  return groups;
+}
+
+export default function ReminderDeadlineDashboard({ title = "Reminder Deadline Evaluasi Kinerja", items = [] }) {
+  const groups = groupByNo(items);
+  const urgentGroup = groups.find((g) => g.urgent);
+  const urgentRow = urgentGroup ? urgentGroup.rows.find((r) => r.urgent) || urgentGroup.rows[0] : null;
 
   return (
     <div className={`${styles.panel} ${styles.panelReminder}`}>
@@ -86,50 +39,54 @@ export default function ReminderDeadlineDashboard({ title = "Reminder Deadline E
         </span>
       </div>
 
-      {urgentItem && (
+      {urgentGroup && urgentRow && (
         <div className={styles.urgentBox}>
           <span className={styles.urgentTag}>URGENT!</span>
           <div className={styles.urgentBody}>
-            <div className={styles.urgentKegiatan}>{urgentItem.kegiatan}</div>
+            <div className={styles.urgentKegiatan}>{urgentGroup.kegiatan}</div>
             <div className={styles.urgentMeta}>
-              {urgentItem.rows[0].pihak} &middot; {urgentItem.rows[0].waktu}
+              {urgentRow.pihak} &middot; {urgentRow.waktu}
             </div>
           </div>
         </div>
       )}
 
-      <div className={styles.reminderTableWrap}>
-        <table className={styles.reminderTable}>
-          <thead>
-            <tr>
-              <th>No</th>
-              <th>Kegiatan</th>
-              <th>Pihak</th>
-              <th>Waktu Pelaksanaan</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ITEMS.map((item) =>
-              item.rows.map((r, i) => (
-                <tr key={`${item.no}-${i}`} className={item.urgent ? styles.reminderRowUrgent : undefined}>
-                  {i === 0 && (
-                    <>
-                      <td rowSpan={item.rows.length} className={styles.reminderNo}>
-                        {item.no}
-                      </td>
-                      <td rowSpan={item.rows.length} className={styles.reminderKegiatan}>
-                        {item.kegiatan}
-                      </td>
-                    </>
-                  )}
-                  <td>{r.pihak}</td>
-                  <td className={styles.reminderWaktu}>{r.waktu}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      {groups.length === 0 ? (
+        <div className={styles.reminderEmpty}>Belum ada data timeline untuk periode ini.</div>
+      ) : (
+        <div className={styles.reminderTableWrap}>
+          <table className={styles.reminderTable}>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Kegiatan</th>
+                <th>Pihak</th>
+                <th>Waktu Pelaksanaan</th>
+              </tr>
+            </thead>
+            <tbody>
+              {groups.map((group) =>
+                group.rows.map((r, i) => (
+                  <tr key={`${group.no}-${i}`} className={group.urgent ? styles.reminderRowUrgent : undefined}>
+                    {i === 0 && (
+                      <>
+                        <td rowSpan={group.rows.length} className={styles.reminderNo}>
+                          {group.no}
+                        </td>
+                        <td rowSpan={group.rows.length} className={styles.reminderKegiatan}>
+                          {group.kegiatan}
+                        </td>
+                      </>
+                    )}
+                    <td>{r.pihak}</td>
+                    <td className={styles.reminderWaktu}>{r.waktu}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,0 +1,270 @@
+/* Modal "Ketentuan Teknis" — dipakai KetentuanUmumBox.js (tombol "Baca
+   Ketentuan Teknis") dari halaman Manajemen Koreksi Nilai maupun
+   Verifikasi Koreksi Nilai. */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 36, 85, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 60;
+}
+
+.modalCard {
+  background: var(--white);
+  border-radius: 16px;
+  width: min(1700px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header dibuat "fix" (sticky) di atas popup — tetap terlihat (termasuk
+   tombol tutup & zoom di kanan) walau isi popup di-scroll ke bawah. */
+.modalHeader {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 24px;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  border-radius: 16px 16px 0 0;
+  flex-shrink: 0;
+}
+
+.modalBody {
+  padding: 20px 24px 24px;
+}
+
+.modalTitle {
+  font-weight: 800;
+  color: var(--navy);
+  font-size: 16px;
+}
+
+.modalHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Kontrol zoom in/out konten popup — diletakkan di kanan header, di
+   sebelah kiri tombol tutup. */
+.zoomControls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--badge-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.zoomButton {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--cobalt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.zoomButton:hover {
+  background: var(--ice);
+}
+
+.zoomButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.zoomLevel {
+  min-width: 38px;
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.modalClose {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: var(--badge-bg);
+  color: var(--cobalt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.modalClose:hover {
+  background: var(--ice);
+}
+
+.tableScroll {
+  overflow-x: auto;
+}
+
+.ketentuanTable {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  color: var(--navy);
+}
+
+.ketentuanTable th,
+.ketentuanTable td {
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.ketentuanTable thead th {
+  background: var(--ice);
+  color: var(--cobalt);
+  font-weight: 800;
+  text-align: center;
+}
+
+.ketentuanTable tbody tr:nth-child(odd) {
+  background: var(--card-bg);
+}
+
+.faktorCell {
+  background: #FEF3D7;
+  font-weight: 700;
+  min-width: 170px;
+}
+
+.faktorCell strong {
+  color: var(--navy);
+}
+
+/* Dua kolom — Kriteria Penambah & Pengurangan Nilai */
+.kriteriaColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 1100px) {
+  .kriteriaColumns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kriteriaPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-radius: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+}
+
+.kriteriaPanelTambah {
+  background: #F1FBF4;
+  border-color: #BFE8C9;
+}
+
+.kriteriaPanelKurang {
+  background: #FDF2F2;
+  border-color: #F3C6C6;
+}
+
+.kriteriaPanelHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.kriteriaPanelIcon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.kriteriaPanelIconTambah {
+  background: #1D9A46;
+}
+
+.kriteriaPanelIconKurang {
+  background: #D92B2B;
+}
+
+.kriteriaPanelTitle {
+  font-weight: 800;
+  color: var(--navy);
+  font-size: 16px;
+}
+
+.kriteriaList {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 12.5px;
+  color: var(--navy);
+  line-height: 1.6;
+}
+
+.kriteriaListText {
+  font-weight: 700;
+}
+
+.hukdisTable {
+  margin-top: 8px;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-weight: 400;
+  width: min(320px, 100%);
+}
+
+.hukdisTable th,
+.hukdisTable td {
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  text-align: left;
+}
+
+.hukdisTableTambah th {
+  background: #1D9A46;
+  color: var(--white);
+}
+
+.hukdisTableKurang th {
+  background: #D92B2B;
+  color: var(--white);
+}
+
+.hukdisTable tbody tr:nth-child(even) {
+  background: var(--card-bg);
+}

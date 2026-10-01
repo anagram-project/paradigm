@@ -423,3 +423,10 @@
 .reminderRowUrgent td {
   background: #FFF7ED;
 }
+
+.reminderEmpty {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12.5px;
+  padding: 28px 12px;
+}

@@ -1,0 +1,264 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cardTitle {
+  font-weight: 800;
+  color: var(--navy);
+  font-size: 15px;
+}
+
+.hintText {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.periodeField {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.periodeSelect {
+  background: var(--cobalt);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.sourceTag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.sourceTagBawaan {
+  background: #FEF3D7;
+  color: #92650B;
+}
+
+.sourceTagSpreadsheet {
+  background: #E4F6EA;
+  color: #1D7A3E;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.textInput,
+.textArea {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 11px;
+  font-size: 13px;
+  color: var(--navy);
+  background: var(--card-bg);
+  font-family: inherit;
+  width: 100%;
+}
+
+.textArea {
+  resize: vertical;
+}
+
+.textInput:disabled,
+.textArea:disabled {
+  background: #EEF2F7;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.noInput {
+  width: 64px;
+  flex-shrink: 0;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--navy);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.rowCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--badge-bg);
+}
+
+.rowTopFields {
+  display: flex;
+  gap: 10px;
+}
+
+.rowGrid2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.rowFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.removeRowButton {
+  background: #FEE2E2;
+  color: #DC2626;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.removeRowButton:hover {
+  background: #FCA5A5;
+}
+
+.removeRowButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.addRowButton {
+  align-self: flex-start;
+  background: var(--badge-bg);
+  border: 1px dashed var(--border);
+  color: var(--cobalt);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.addRowButton:hover {
+  background: var(--ice);
+}
+
+.addRowButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.emptyRowsHint {
+  font-size: 12.5px;
+  color: var(--muted);
+  text-align: center;
+  padding: 10px;
+}
+
+.actionsBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.saveButton {
+  background: var(--cobalt);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  padding: 11px 24px;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.saveButton:hover {
+  background: var(--navy);
+}
+
+.saveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dangerButton {
+  background: none;
+  border: 1px solid #FCA5A5;
+  color: #DC2626;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.dangerButton:hover {
+  background: #FEE2E2;
+}
+
+.dangerButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.statusMessage {
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.statusSuccess {
+  background: #E4F6EA;
+  color: #1D7A3E;
+}
+
+.statusError {
+  background: #FCE7E7;
+  color: #B3261E;
+}

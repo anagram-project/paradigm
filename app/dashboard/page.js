@@ -1,4 +1,6 @@
 import { getSessionUser } from "@/lib/auth";
+import { generatePeriodeOptions, periodeDefault } from "@/lib/periodeKinerja";
+import { getTimelineByPeriode } from "@/lib/timelineKinerja";
 import Carousel from "./Carousel";
 import MonitoringKoreksiDashboard from "./MonitoringKoreksiDashboard";
 import ReminderDeadlineDashboard from "./ReminderDeadlineDashboard";
@@ -11,6 +13,18 @@ import styles from "./page.module.css";
 export default async function DashboardHomePage() {
   const session = await getSessionUser();
   const namaDepan = session?.nama ? session.nama.trim().split(/\s+/)[0] : "Pengguna";
+
+  // Widget ini menampilkan Timeline Evaluasi Kinerja periode default (lihat
+  // lib/periodeKinerja.js) — kalau Google Sheets sedang bermasalah, jangan
+  // sampai seluruh Home ikut gagal, cukup tampilkan widget kosong.
+  let evaluasiKinerja = [];
+  try {
+    const periode = periodeDefault(generatePeriodeOptions());
+    const timeline = await getTimelineByPeriode(periode);
+    evaluasiKinerja = timeline.evaluasiKinerja;
+  } catch (error) {
+    console.error("Gagal memuat Timeline Evaluasi Kinerja untuk Home:", error);
+  }
 
   return (
     <>
@@ -26,7 +40,7 @@ export default async function DashboardHomePage() {
 
       <div className={styles.dashboardsRow}>
         <MonitoringKoreksiDashboard />
-        <ReminderDeadlineDashboard />
+        <ReminderDeadlineDashboard items={evaluasiKinerja} />
       </div>
     </>
   );
