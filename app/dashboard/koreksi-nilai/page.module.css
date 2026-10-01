@@ -407,12 +407,12 @@
 .faktorHeaderRow,
 .faktorRow {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 24px;
 }
 
 .faktorRow {
-  align-items: center;
+  align-items: start;
 }
 
 .faktorNumberBadge {
@@ -511,21 +511,23 @@
 
 .uploadRow {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
 }
 
 .fileBox {
   flex: 1;
+  min-width: 0;
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px 14px;
   font-size: 13px;
   background: var(--card-bg);
   color: var(--muted-light);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.5;
 }
 
 .fileBox a {
