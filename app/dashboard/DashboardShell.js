@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -111,6 +111,31 @@ const NAV_GROUPS = [
       },
     ],
   },
+  {
+    // Menu khusus Admin KKPA — LO Subdit & Biasa TIDAK melihat grup ini.
+    // Pembatasannya diatur lewat ADMIN_ONLY_PATHS di lib/roles.js (dicek
+    // lebih dulu sebelum shortcut akses-penuh LO Subdit), bukan di sini —
+    // di sini cuma menyaring tampilan lewat canAccessPath seperti biasa.
+    label: "Menu Khusus Admin Aplikasi",
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 11-4 0v-.09a1.7 1.7 0 00-1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.7 1.7 0 00.34-1.87 1.7 1.7 0 00-1.55-1H3a2 2 0 110-4h.09a1.7 1.7 0 001.55-1 1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06a1.7 1.7 0 001.87.34H9a1.7 1.7 0 001-1.55V3a2 2 0 114 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06a1.7 1.7 0 00-.34 1.87V9a1.7 1.7 0 001.55 1H21a2 2 0 110 4h-.09a1.7 1.7 0 00-1.55 1z" />
+      </svg>
+    ),
+    items: [
+      {
+        href: "/dashboard/notifikasi-admin",
+        label: "Update/Edit Notifikasi",
+        icon: (
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.7 21a2 2 0 01-3.4 0" />
+          </svg>
+        ),
+      },
+    ],
+  },
 ];
 
 const SETTINGS_ITEM = {
@@ -124,14 +149,14 @@ const SETTINGS_ITEM = {
   ),
 };
 
-function NavLink({ item, pathname, collapsed, boxed }) {
+function NavLink({ item, pathname, collapsed }) {
   const isActive = pathname === item.href;
   return (
     <Link
       href={item.href}
-      className={`${styles.navItem} ${boxed ? styles.navItemBoxed : ""} ${
-        isActive ? (boxed ? styles.navItemBoxedActive : styles.navItemActive) : ""
-      } ${collapsed ? styles.navItemCollapsed : ""}`}
+      className={`${styles.navItem} ${isActive ? styles.navItemActive : ""} ${
+        collapsed ? styles.navItemCollapsed : ""
+      }`}
       title={collapsed ? item.label : undefined}
     >
       {item.icon}
@@ -147,6 +172,24 @@ export default function DashboardShell({ user, children }) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+
+  // --- Pencarian menu di header ---
+  // Sesuai permintaan: search ini mencari MENU/HALAMAN yang bisa diakses
+  // pengguna yang login (bukan data pegawai/IPR/dokumen) — daftar sumbernya
+  // dibangun dari menu yang sama persis dengan yang dirender di sidebar
+  // (lihat canSeeHome/visibleNavGroups/canSeeSettings di bawah).
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchBoxRef = useRef(null);
+
+  // --- Notifikasi di header ---
+  // Angka di lonceng = jumlah notifikasi AKTIF saat ini, sama untuk semua
+  // pengguna (tidak ada status terbaca per-pengguna). Isinya dikelola Admin
+  // KKPA lewat menu "Menu Khusus Admin Aplikasi" > "Update/Edit Notifikasi".
+  const [notifList, setNotifList] = useState([]);
+  const [notifLoading, setNotifLoading] = useState(true);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const bellRef = useRef(null);
 
   // Preferensi buka/tutup sidebar disimpan di localStorage per-browser saja
   // (bukan di sesi/akun), murni supaya tampilan tetap sesuai pilihan
@@ -172,6 +215,45 @@ export default function DashboardShell({ user, children }) {
     });
   }
 
+  // Ambil daftar notifikasi aktif sekali saat shell dimuat — dipakai baik
+  // untuk angka di lonceng maupun isi dropdown-nya, supaya tidak perlu
+  // fetch dua kali untuk dua hal yang sama.
+  useEffect(() => {
+    let cancelled = false;
+    async function loadNotifikasi() {
+      try {
+        const res = await fetch("/api/notifikasi");
+        const data = await res.json();
+        if (!cancelled && res.ok) {
+          setNotifList(Array.isArray(data.notifikasi) ? data.notifikasi : []);
+        }
+      } catch (err) {
+        // Diamkan — kalau gagal, lonceng cukup tampil tanpa angka/isi,
+        // tidak perlu mengganggu pengguna dengan pesan error di header.
+      } finally {
+        if (!cancelled) setNotifLoading(false);
+      }
+    }
+    loadNotifikasi();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Tutup dropdown pencarian/notifikasi saat pengguna klik di luar kotaknya.
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(event.target)) {
+        setSearchOpen(false);
+      }
+      if (bellRef.current && !bellRef.current.contains(event.target)) {
+        setNotifOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const nama = user?.nama || "Pengguna";
   const jabatan = user?.jabatan || "";
   const role = user?.role || "biasa";
@@ -187,6 +269,46 @@ export default function DashboardShell({ user, children }) {
     items: group.items.filter((item) => canAccessPath(role, item.href)),
   })).filter((group) => group.items.length > 0);
   const canSeeSettings = canAccessPath(role, SETTINGS_ITEM.href);
+
+  // Sumber data pencarian menu: persis daftar menu yang sudah disaring
+  // sesuai akses role di atas — jadi search tidak pernah menampilkan menu
+  // yang memang tidak boleh diakses pengguna yang login.
+  const searchableMenuItems = useMemo(() => {
+    const list = [];
+    if (canSeeHome) list.push(HOME_ITEM);
+    visibleNavGroups.forEach((group) => {
+      group.items.forEach((item) => list.push(item));
+    });
+    if (canSeeSettings) list.push(SETTINGS_ITEM);
+    return list;
+  }, [canSeeHome, visibleNavGroups, canSeeSettings]);
+
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return searchableMenuItems.filter((item) => item.label.toLowerCase().includes(q));
+  }, [searchQuery, searchableMenuItems]);
+
+  function handleSearchChange(event) {
+    setSearchQuery(event.target.value);
+    setSearchOpen(true);
+  }
+
+  function handleSearchFocus() {
+    setSearchOpen(true);
+    setNotifOpen(false);
+  }
+
+  function handleSearchSelect(item) {
+    router.push(item.href);
+    setSearchQuery("");
+    setSearchOpen(false);
+  }
+
+  function toggleNotif() {
+    setNotifOpen((prev) => !prev);
+    setSearchOpen(false);
+  }
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -210,11 +332,11 @@ export default function DashboardShell({ user, children }) {
 
         <div className={`${styles.sidebarBrand} ${collapsed ? styles.sidebarBrandCollapsed : ""}`}>
           <div className={styles.sidebarBrandMark}>
-            <Image src="/images/logo.png" alt="Logo PARADIGM" width={34} height={34} />
+            <Image src="/images/logo.png" alt="Logo PARADIGMA" width={34} height={34} />
           </div>
           {!collapsed && (
             <div className={styles.sidebarBrandText}>
-              <div className={styles.sidebarBrandName}>PARADIGM</div>
+              <div className={styles.sidebarBrandName}>PARADIGMA</div>
               <div className={styles.sidebarBrandSub}>Dit. Pelaksanaan Anggaran</div>
             </div>
           )}
@@ -235,13 +357,7 @@ export default function DashboardShell({ user, children }) {
                 </div>
               )}
               {group.items.map((item) => (
-                <NavLink
-                  key={item.href}
-                  item={item}
-                  pathname={pathname}
-                  collapsed={collapsed}
-                  boxed={!collapsed}
-                />
+                <NavLink key={item.href} item={item} pathname={pathname} collapsed={collapsed} />
               ))}
             </div>
           ))}
@@ -264,22 +380,73 @@ export default function DashboardShell({ user, children }) {
 
       <div className={styles.main}>
         <header className={styles.header}>
-          <div className={styles.searchBox}>
+          <div className={styles.searchBox} ref={searchBoxRef}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C93B3" strokeWidth="2">
               <circle cx="11" cy="11" r="7" />
               <path d="M21 21l-4.3-4.3" />
             </svg>
-            <input type="text" aria-label="Cari" placeholder="Cari IPR, pegawai, dokumen..." />
+            <input
+              type="text"
+              aria-label="Cari menu"
+              placeholder="Cari menu yang dapat diakses..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onFocus={handleSearchFocus}
+            />
+
+            {searchOpen && searchQuery.trim() && (
+              <div className={styles.searchDropdown}>
+                {searchResults.length === 0 ? (
+                  <div className={styles.searchEmpty}>Menu tidak ditemukan.</div>
+                ) : (
+                  searchResults.map((item) => (
+                    <button
+                      type="button"
+                      key={item.href}
+                      className={styles.searchResultItem}
+                      onClick={() => handleSearchSelect(item)}
+                    >
+                      <span className={styles.searchResultIcon}>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
           <div className={styles.headerRight}>
-            <button type="button" aria-label="Notifikasi" className={styles.bellButton}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#062455" strokeWidth="2">
-                <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.7 21a2 2 0 01-3.4 0" />
-              </svg>
-              <span className={styles.bellDot} />
-            </button>
+            <div className={styles.bellWrap} ref={bellRef}>
+              <button type="button" aria-label="Notifikasi" className={styles.bellButton} onClick={toggleNotif}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#062455" strokeWidth="2">
+                  <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 01-3.4 0" />
+                </svg>
+                {notifList.length > 0 && (
+                  <span className={styles.bellBadge}>{notifList.length > 9 ? "9+" : notifList.length}</span>
+                )}
+              </button>
+
+              {notifOpen && (
+                <div className={styles.notifDropdown}>
+                  <div className={styles.notifDropdownHeader}>Notifikasi</div>
+                  {notifLoading ? (
+                    <div className={styles.notifEmpty}>Memuat notifikasi...</div>
+                  ) : notifList.length === 0 ? (
+                    <div className={styles.notifEmpty}>Tidak ada notifikasi aktif saat ini.</div>
+                  ) : (
+                    <div className={styles.notifList}>
+                      {notifList.map((n) => (
+                        <div key={n.id} className={styles.notifListItem}>
+                          <div className={styles.notifListItemTitle}>{n.judul}</div>
+                          {n.isi && <div className={styles.notifListItemBody}>{n.isi}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className={styles.profile}>
               <div className={styles.avatar}>{initial}</div>

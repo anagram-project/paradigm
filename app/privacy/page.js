@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Kebijakan Privasi - PARADIGM",
+  title: "Kebijakan Privasi - PARADIGMA",
 };
 
 // Halaman statis (tanpa login) — dibutuhkan sebagai syarat Google OAuth
@@ -18,11 +18,11 @@ export default function PrivacyPolicyPage() {
         lineHeight: 1.7,
       }}
     >
-      <h1 style={{ fontSize: 24, marginBottom: 4 }}>Kebijakan Privasi PARADIGM</h1>
+      <h1 style={{ fontSize: 24, marginBottom: 4 }}>Kebijakan Privasi PARADIGMA</h1>
       <p style={{ color: "#64748b", fontSize: 13, marginBottom: 32 }}>Terakhir diperbarui: Oktober 2026</p>
 
       <p>
-        PARADIGM adalah aplikasi internal untuk mendukung pengelolaan kinerja pegawai di
+        PARADIGMA adalah aplikasi internal untuk mendukung pengelolaan kinerja pegawai di
         lingkungan Direktorat Pelaksanaan Anggaran, Direktorat Jenderal Perbendaharaan,
         Kementerian Keuangan RI. Aplikasi ini bersifat privat/internal dan hanya digunakan
         oleh pegawai di lingkungan direktorat tersebut.
@@ -55,7 +55,7 @@ export default function PrivacyPolicyPage() {
       <h2 style={{ fontSize: 16, marginTop: 28 }}>Kontak</h2>
       <p>
         Pertanyaan terkait kebijakan privasi ini dapat disampaikan melalui pengelola
-        aplikasi PARADIGM di lingkungan Direktorat Pelaksanaan Anggaran.
+        aplikasi PARADIGMA di lingkungan Direktorat Pelaksanaan Anggaran.
       </p>
     </main>
   );

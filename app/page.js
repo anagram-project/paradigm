@@ -53,9 +53,9 @@ export default function LoginPage() {
       <div className={styles.navbar}>
         <div className={styles.brand}>
           <div className={styles.brandMark}>
-            <Image src="/images/logo.png" alt="Logo PARADIGM" width={36} height={36} />
+            <Image src="/images/logo.png" alt="Logo PARADIGMA" width={36} height={36} />
           </div>
-          <span className={styles.brandName}>PARADIGM</span>
+          <span className={styles.brandName}>PARADIGMA</span>
         </div>
         <nav className={styles.navLinks}>
           <a href="#">Beranda</a>
@@ -68,7 +68,7 @@ export default function LoginPage() {
       <div className={styles.content}>
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <h1>Masuk ke PARADIGM</h1>
+            <h1>Masuk ke PARADIGMA</h1>
             <p>Pelaksanaan Anggaran Performance &amp; Risk Action Digitalized Management</p>
           </div>
 

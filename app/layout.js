@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "PARADIGM",
+  title: "PARADIGMA",
   description:
     "Pelaksanaan Anggaran Performance & Risk Action Digitalized Management — Direktorat Pelaksanaan Anggaran, DJPb",
 };

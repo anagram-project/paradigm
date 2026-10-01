@@ -37,7 +37,7 @@ export async function GET(request) {
     return htmlResponse(`
       <p><strong>Berhasil terhubung.</strong> Salin nilai di bawah ini, lalu tempelkan sebagai variabel <code>GOOGLE_OAUTH_REFRESH_TOKEN</code> di <code>.env.local</code> dan di Environment Variables Vercel, lalu redeploy:</p>
       <pre style="background:#f1f5f9;padding:12px;border-radius:8px;white-space:pre-wrap;word-break:break-all;">${escapeHtml(tokens.refresh_token)}</pre>
-      <p>Setelah tersimpan, semua file Naskah Dinas yang diunggah lewat PARADIGM akan tercatat sebagai milik akun Google Anda sendiri (bukan Service Account), jadi kuota penyimpanan yang dipakai adalah kuota Drive Anda.</p>
+      <p>Setelah tersimpan, semua file Naskah Dinas yang diunggah lewat PARADIGMA akan tercatat sebagai milik akun Google Anda sendiri (bukan Service Account), jadi kuota penyimpanan yang dipakai adalah kuota Drive Anda.</p>
       <p style="color:#64748b;font-size:14px;">Halaman ini boleh ditutup setelah nilainya disalin.</p>
     `);
   } catch (error) {
@@ -51,7 +51,7 @@ function escapeHtml(str) {
 }
 
 function htmlResponse(bodyHtml) {
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Hubungkan Google Drive - PARADIGM</title></head>
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Hubungkan Google Drive - PARADIGMA</title></head>
     <body style="font-family:system-ui,sans-serif;max-width:640px;margin:48px auto;padding:0 16px;color:#1e293b;line-height:1.6">
       <h2>Hubungkan Google Drive</h2>
       ${bodyHtml}
