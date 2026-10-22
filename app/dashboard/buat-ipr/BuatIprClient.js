@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import styles from "./page.module.css";
+import { getNarasiBerakhlak } from "@/lib/narasiBerakhlak";
 
 // Daftar tetap: Triwulan I 2026 s.d. Triwulan IV 2027 (lihat juga
 // lib/iprReferensi.js#getIprPeriodeOptions — disalin di sini karena
@@ -128,6 +129,7 @@ export default function BuatIprClient() {
   const periodeSebelumnya = useMemo(() => getPeriodeSebelumnya(periode), [periode]);
   const [prevDraft, setPrevDraft] = useState(null);
   const [importing, setImporting] = useState(false);
+  const [autoGenerating, setAutoGenerating] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -378,6 +380,57 @@ export default function BuatIprClient() {
       });
     } finally {
       setImporting(false);
+    }
+  }
+
+  // Auto Generate narasi Perilaku Kerja: narasi (Umpan Balik, Kendala, Usulan)
+  // tiap aspek BerAKHLAK dipetakan otomatis dari nilai Capaian aspek tsb,
+  // mengikuti tabel rentang nilai pada lib/narasiBerakhlak.js (sumber: file
+  // Excel "Narasi Per Kategori" dari pengguna). Nilai 100–105 & 70–90 tidak
+  // punya narasi acuan — aspek dengan nilai di rentang itu dilewati.
+  function handleAutoGenerateNarasi() {
+    const ok = window.confirm(
+      "Buat otomatis narasi (Umpan Balik Berkelanjutan, Kendala/Hambatan dan Penyebabnya, Usulan Strategi Penyelesaian) untuk tiap aspek Perilaku Kerja berdasarkan nilai Capaian saat ini?\n\nIsian narasi yang sudah ada akan DITIMPA. Narasi hasil generate tetap bisa Anda edit, dan tetap wajib disesuaikan kalau kebetulan sama persis dengan periode sebelumnya."
+    );
+    if (!ok) return;
+
+    setAutoGenerating(true);
+    try {
+      const terlewati = [];
+      setPerilakuKerja((prev) => {
+        const next = { ...prev };
+        ASPEK_PERILAKU.forEach((a) => {
+          const capaian = prev[a.key]?.capaian;
+          const narasi = getNarasiBerakhlak(a.label, capaian);
+          if (!narasi) {
+            terlewati.push(a.label);
+            return;
+          }
+          next[a.key] = {
+            ...next[a.key],
+            umpanBalik: narasi.umpanBalik,
+            kendala: narasi.kendala,
+            usulan: narasi.usulan,
+          };
+        });
+        return next;
+      });
+
+      if (terlewati.length === ASPEK_PERILAKU.length) {
+        setMessage({
+          type: "error",
+          text: "Tidak ada narasi yang bisa dibuat otomatis — pastikan kolom Capaian tiap aspek sudah terisi nilai (di luar rentang 100–105 dan 70–90, yang belum punya narasi acuan).",
+        });
+      } else if (terlewati.length > 0) {
+        setMessage({
+          type: "success",
+          text: `Narasi berhasil dibuat otomatis untuk ${ASPEK_PERILAKU.length - terlewati.length} aspek. Dilewati (nilai Capaian kosong atau di rentang 100–105 / 70–90 yang belum punya narasi acuan): ${terlewati.join(", ")}.`,
+        });
+      } else {
+        setMessage({ type: "success", text: "Narasi Perilaku Kerja untuk semua aspek berhasil dibuat otomatis. Silakan tinjau & sesuaikan sebelum disimpan." });
+      }
+    } finally {
+      setAutoGenerating(false);
     }
   }
 
@@ -713,19 +766,34 @@ export default function BuatIprClient() {
 
           <div className={styles.sectionBar}>Perilaku Kerja</div>
           <div className={styles.card}>
-            {perilakuReferensi?.npk && (
+            <div className={styles.autoGenRow}>
               <div className={styles.hintText}>
-                Nilai Perilaku Kerja (NPK) periode ini: <strong>{perilakuReferensi.npk}</strong> (hasil tarik
-                Monitoring IPR Satu Kemenkeu). Kolom &quot;Capaian&quot; tiap aspek BerAKHLAK di bawah sudah
-                terisi otomatis dari nilai ini dan tetap bisa Anda sesuaikan.
+                {perilakuReferensi?.npk && (
+                  <>
+                    Nilai Perilaku Kerja (NPK) periode ini: <strong>{perilakuReferensi.npk}</strong> (hasil tarik
+                    Monitoring IPR Satu Kemenkeu). Kolom &quot;Capaian&quot; tiap aspek BerAKHLAK di bawah sudah
+                    terisi otomatis dari nilai ini dan tetap bisa Anda sesuaikan.{" "}
+                  </>
+                )}
+                Tombol di samping membuat narasi (Umpan Balik Berkelanjutan, Kendala/Hambatan dan Penyebabnya,
+                Usulan Strategi Penyelesaian) secara otomatis dari nilai Capaian tiap aspek, mengikuti pedoman
+                rentang nilai BerAKHLAK — hasilnya tetap wajib ditinjau & disesuaikan sebelum disimpan.
               </div>
-            )}
+              <button
+                type="button"
+                className={styles.importButton}
+                onClick={handleAutoGenerateNarasi}
+                disabled={autoGenerating || loading}
+              >
+                {autoGenerating ? "Membuat Narasi..." : "Auto Generate Narasi"}
+              </button>
+            </div>
             <div className={styles.iprTableWrap}>
               <table className={styles.iprTable}>
                 <thead>
                   <tr>
                     <th>Aspek Penilaian</th>
-                    <th>Capaian IKU</th>
+                    <th>Capaian Perilaku</th>
                     <th>Umpan Balik Berkelanjutan</th>
                     <th>Kendala/Hambatan dan Penyebabnya</th>
                     <th>Usulan Strategi Penyelesaian</th>

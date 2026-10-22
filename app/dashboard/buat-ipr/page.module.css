@@ -306,6 +306,16 @@
   width: 100%;
 }
 
+/* Baris tombol "Auto Generate Narasi" (bagian Perilaku Kerja) — tanpa
+   background, menyatu di dalam .card di atas tabel. */
+.autoGenRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
 /* Banner tombol "Import Narasi & Usulan Pelatihan dari Triwulan Sebelumnya" +
    keterangan aturan narasi identik (bagian Hasil Kerja/Perilaku Kerja). */
 .importBanner {
