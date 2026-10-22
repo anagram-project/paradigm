@@ -164,6 +164,7 @@
   padding: 10px 14px;
   font-size: 12.5px;
   font-weight: 600;
+  white-space: pre-line;
 }
 
 .statusSuccess {
@@ -303,4 +304,191 @@
   color: var(--navy);
   background: var(--card-bg);
   width: 100%;
+}
+
+/* Banner tombol "Import Narasi & Usulan Pelatihan dari Triwulan Sebelumnya" +
+   keterangan aturan narasi identik (bagian Hasil Kerja/Perilaku Kerja). */
+.importBanner {
+  background: var(--ice);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.importBannerText {
+  font-size: 12.5px;
+  color: var(--navy);
+  line-height: 1.6;
+  max-width: 640px;
+}
+
+.importButton {
+  background: var(--navy);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.importButton:hover {
+  background: var(--cobalt);
+}
+
+.importButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Tabel Hasil Kerja / Perilaku Kerja ala "Capaian IKU" dgn header navy. */
+.iprTableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.iprTable {
+  width: 100%;
+  min-width: 960px;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.iprTable th {
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 800;
+  font-size: 12px;
+  padding: 12px 10px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.iprTable td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  background: var(--card-bg);
+}
+
+.iprTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.noIkuCell {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.noIkuBadge {
+  display: inline-block;
+  background: var(--badge-bg);
+  color: var(--navy);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ikuNameCell {
+  min-width: 190px;
+}
+
+.ikuNameInput {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  background: transparent;
+  font-family: inherit;
+}
+
+.ikuNameInput:hover,
+.ikuNameInput:focus {
+  border-color: var(--border);
+  background: var(--card-bg);
+}
+
+.ikuCardTitleStatic {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--navy);
+}
+
+.ikuMetaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.capaianCell {
+  width: 110px;
+}
+
+.capaianInput {
+  width: 100%;
+  min-height: 56px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--navy);
+  background: #EEF2F7;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.narasiCell {
+  min-width: 180px;
+}
+
+.narasiTextarea {
+  width: 100%;
+  min-height: 70px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  color: var(--navy);
+  background: #F4F6F9;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.narasiTextarea::placeholder {
+  color: #9AA6B8;
+}
+
+.narasiTextareaFlag {
+  border-color: #DC2626;
+  background: #FEF2F2;
+}
+
+.narasiFlagHint {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #B3261E;
+  margin-top: 4px;
+}
+
+.iprRowDeleteCell {
+  width: 1%;
+  text-align: center;
 }
