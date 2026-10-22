@@ -88,18 +88,203 @@
   background: var(--cobalt);
 }
 
-.noticeBox {
+/* Poster utama pengumuman voting (landscape, dengan tombol "MULAI PILIH!"
+   terbakar di dalam gambarnya) — seluruh poster jadi tombol yang scroll ke
+   bagian voting di bawah. */
+.bannerWrap {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 1px solid var(--border);
+  background: none;
+  cursor: pointer;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.bannerImage {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.votingSection {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scroll-margin-top: 20px;
+}
+
+.votingTitle {
+  font-weight: 800;
+  color: var(--navy);
+  font-size: 16px;
+  margin: 0;
+}
+
+.votingHint {
+  font-size: 12.5px;
+  color: #B3261E;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Grid 6 kartu kandidat (poster portrait 1:3 + badge "Calon Pegawai
+   Teladan" di bawahnya) — tampil berdampingan dalam satu baris di layar
+   lebar, melipat ke beberapa baris di layar sempit. */
+.kandidatGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px;
+}
+
+.kandidatCard {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--card-bg);
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kandidatCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(6, 36, 85, 0.12);
+}
+
+.kandidatCardSelected {
+  border-color: var(--cobalt);
+  box-shadow: 0 0 0 3px var(--cobalt);
+}
+
+.kandidatPosterWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 3;
+  background: #0A0A0A;
+}
+
+.kandidatPoster {
+  object-fit: cover;
+  object-position: top center;
+}
+
+.kandidatCheck {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--cobalt);
+  color: var(--white);
+  font-weight: 800;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.kandidatBadge {
+  background: var(--navy);
+  color: var(--white);
+  padding: 8px 6px 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kandidatBadgeTitle {
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+}
+
+.kandidatBadgeSubtitle {
+  font-size: 10px;
+  opacity: 0.85;
+  font-weight: 600;
+}
+
+.hintText {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.statusMessage {
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: pre-line;
+  margin: 0;
+}
+
+.statusError {
+  background: #FCE7E7;
+  color: #B3261E;
+}
+
+.addButton {
   align-self: flex-start;
   background: var(--cobalt);
   color: var(--white);
-  border-radius: 14px;
-  padding: 20px 34px;
-  text-align: center;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 28px;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
 }
 
-.noticeBox p {
-  margin: 0;
+.addButton:hover {
+  background: var(--navy);
+}
+
+.addButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Kotak ucapan terima kasih, tampil setelah pegawai menyimpan pilihannya —
+   diikuti carousel poster lama (TeladanCarousel) di bawahnya. */
+.thanksBox {
+  align-self: stretch;
+  background: var(--badge-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.thanksTitle {
   font-weight: 800;
-  font-size: 15px;
-  line-height: 1.7;
+  font-size: 16px;
+  color: var(--navy);
+  margin: 0;
+}
+
+.thanksSubtitle {
+  font-size: 13px;
+  color: var(--navy);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.thanksList {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--navy);
+  line-height: 1.8;
 }
