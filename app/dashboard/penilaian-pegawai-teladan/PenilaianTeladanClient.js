@@ -169,11 +169,6 @@ export default function PenilaianTeladanClient() {
             </span>
           )}
         </div>
-        <p className={styles.hintText}>
-          Format perhitungan mengikuti Form Penilaian Pegawai Teladan Dit PA: 5 komponen berbobot 20 (total 100) —
-          Disiplin, Integritas, Kehadiran, Vote Pegawai, dan Nilai Kinerja. Kolom &quot;Jumlah Vote&quot; otomatis
-          ditarik dari hasil menu reguler &quot;Pemilihan Pegawai Teladan&quot; dan tidak dapat diubah di sini.
-        </p>
         <div className={styles.periodeField}>
           <select
             className={styles.periodeSelect}
@@ -212,20 +207,23 @@ export default function PenilaianTeladanClient() {
               <table className={styles.table}>
                 <thead>
                   <tr>
+                    <th rowSpan={2} className={styles.thEselon}>
+                      Unit Eselon III
+                    </th>
                     <th rowSpan={2} className={styles.thNominee}>
                       Nominee
                     </th>
-                    <th colSpan={3}>a. Disiplin Pegawai</th>
-                    <th colSpan={2}>b. Integritas Pegawai</th>
-                    <th colSpan={2}>c. Kehadiran Pegawai</th>
-                    <th colSpan={2}>d. Vote Pegawai</th>
-                    <th colSpan={2}>e. Nilai Kinerja Pegawai</th>
+                    <th colSpan={3}>a. Disiplin Pegawai (20%)</th>
+                    <th colSpan={2}>b. Integritas Pegawai (20%)</th>
+                    <th colSpan={2}>c. Kehadiran Pegawai (20%)</th>
+                    <th colSpan={2}>d. Vote Pegawai (20%)</th>
+                    <th colSpan={2}>e. Nilai Kinerja Pegawai (20%)</th>
                     <th rowSpan={2}>Nilai Final</th>
                     <th rowSpan={2}>Peringkat</th>
                   </tr>
                   <tr>
-                    <th>Kerapian Berpakaian</th>
-                    <th>Kepatuhan Jam Kerja</th>
+                    <th>Kerapian Berpakaian (10%)</th>
+                    <th>Kepatuhan Jam Kerja (10%)</th>
                     <th>Skor</th>
                     <th>Nilai (0-100)</th>
                     <th>Skor</th>
@@ -240,12 +238,10 @@ export default function PenilaianTeladanClient() {
                 <tbody>
                   {rows.map((r) => (
                     <tr key={r.kandidatId} className={r.peringkat === 1 ? styles.rowJuara : ""}>
+                      <td className={styles.thEselon}>{r.subdit}</td>
                       <td className={styles.thNominee}>
                         <div className={styles.nomineeName}>{r.nama}</div>
-                        <div className={styles.nomineeSub}>
-                          {r.namaPanggilan ? `${r.namaPanggilan} — ` : ""}
-                          {r.subdit}
-                        </div>
+                        <div className={styles.nomineeSub}>NIP. {r.nip || "-"}</div>
                       </td>
                       {INPUT_FIELDS.slice(0, 2).map((field) => (
                         <td key={field}>

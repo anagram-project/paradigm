@@ -89,7 +89,7 @@
 .table {
   border-collapse: collapse;
   width: 100%;
-  min-width: 1180px;
+  min-width: 1290px;
   font-size: 12px;
 }
 
@@ -112,6 +112,13 @@
 .thNominee {
   min-width: 190px;
   text-align: left !important;
+  white-space: normal !important;
+}
+
+.thEselon {
+  min-width: 110px;
+  font-weight: 700;
+  color: var(--navy);
   white-space: normal !important;
 }
 
