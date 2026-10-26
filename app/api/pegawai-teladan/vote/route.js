@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireApiRole } from "@/lib/requireApiRole";
 import { getVotingStatus, saveVote } from "@/lib/votingTeladan";
-import { isValidKandidatId } from "@/lib/teladanKandidat";
+import { isValidKandidatIdUntukPeriode, periodeTeladanTerlaksana } from "@/lib/teladanKandidat";
 
 const MENU_PATH = "/dashboard/pegawai-teladan";
 
@@ -36,6 +36,9 @@ export async function POST(request) {
     if (!periode) {
       return NextResponse.json({ error: "Parameter periode wajib diisi." }, { status: 400 });
     }
+    if (!periodeTeladanTerlaksana(periode)) {
+      return NextResponse.json({ error: "Pemilihan Pegawai Teladan untuk periode ini belum dibuka." }, { status: 400 });
+    }
 
     const pilihanArray = Array.isArray(pilihan) ? pilihan : [];
     const uniquePilihan = Array.from(new Set(pilihanArray.map((p) => String(p || "").trim()).filter(Boolean)));
@@ -43,7 +46,7 @@ export async function POST(request) {
     if (uniquePilihan.length !== 3) {
       return NextResponse.json({ error: "Pilih tepat 3 calon pegawai teladan yang berbeda." }, { status: 400 });
     }
-    if (!uniquePilihan.every(isValidKandidatId)) {
+    if (!uniquePilihan.every((id) => isValidKandidatIdUntukPeriode(periode, id))) {
       return NextResponse.json({ error: "Ada pilihan yang tidak dikenali. Muat ulang halaman dan coba lagi." }, { status: 400 });
     }
 

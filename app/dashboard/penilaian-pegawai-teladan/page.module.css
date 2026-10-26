@@ -1,0 +1,228 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cardTitle {
+  font-weight: 800;
+  color: var(--navy);
+  font-size: 15px;
+}
+
+.hintText {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.hintText code {
+  background: var(--badge-bg);
+  color: var(--cobalt);
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 11px;
+}
+
+.periodeField {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.periodeSelect {
+  background: var(--cobalt);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.sourceTag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--badge-bg);
+  color: var(--cobalt);
+}
+
+.emptyState {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+  text-align: center;
+  padding: 18px 10px;
+}
+
+.tableCard {
+  padding: 18px 10px 22px 22px;
+}
+
+.tableScroll {
+  overflow-x: auto;
+  padding-right: 12px;
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 1180px;
+  font-size: 12px;
+}
+
+.table th,
+.table td {
+  border: 1px solid var(--border);
+  padding: 7px 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.table thead th {
+  background: var(--navy);
+  color: var(--white);
+  font-size: 10.8px;
+  font-weight: 700;
+  white-space: normal;
+}
+
+.thNominee {
+  min-width: 190px;
+  text-align: left !important;
+  white-space: normal !important;
+}
+
+.nomineeName {
+  font-weight: 800;
+  color: var(--navy);
+  font-size: 12.5px;
+}
+
+.nomineeSub {
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.cellInput {
+  width: 64px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 5px 6px;
+  font-size: 12px;
+  text-align: center;
+  color: var(--navy);
+  background: var(--card-bg);
+  font-family: inherit;
+}
+
+.cellInput:disabled {
+  background: #EEF2F7;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.skorCell {
+  font-weight: 700;
+  color: var(--cobalt);
+  background: var(--badge-bg);
+}
+
+.readonlyCell {
+  font-weight: 700;
+  color: var(--navy);
+  background: #F7FAFF;
+}
+
+.nilaiFinalCell {
+  font-weight: 800;
+  color: var(--navy);
+  background: var(--ice);
+  font-size: 13px;
+}
+
+.peringkatCell {
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.rowJuara td {
+  background: #FFF6E0;
+}
+
+.rowJuara .skorCell {
+  background: #FDECB0;
+}
+
+.rowJuara .nilaiFinalCell {
+  background: var(--amber);
+  color: var(--white);
+}
+
+.actionsBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.saveButton {
+  background: var(--cobalt);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  padding: 11px 24px;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.saveButton:hover {
+  background: var(--navy);
+}
+
+.saveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.statusMessage {
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.statusSuccess {
+  background: #E4F6EA;
+  color: #1D7A3E;
+}
+
+.statusError {
+  background: #FCE7E7;
+  color: #B3261E;
+}
