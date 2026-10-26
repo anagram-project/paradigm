@@ -210,6 +210,26 @@
   cursor: not-allowed;
 }
 
+.printButton {
+  background: var(--card-bg);
+  color: var(--cobalt);
+  border: 1.5px solid var(--cobalt);
+  border-radius: 10px;
+  padding: 11px 24px;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.printButton:hover {
+  background: var(--badge-bg);
+}
+
+.printButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .statusMessage {
   border-radius: 10px;
   padding: 10px 14px;

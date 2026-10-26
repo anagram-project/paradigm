@@ -25,6 +25,7 @@ export default function PenilaianTeladanClient() {
   const [loadError, setLoadError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
+  const [downloading, setDownloading] = useState(false);
 
   // Pengambilan data MURNI (tidak menyentuh state) — dipakai baik dari efek
   // di bawah maupun dari handleSave (lihat alasan pemisahan ini di komentar
@@ -124,6 +125,34 @@ export default function PenilaianTeladanClient() {
       setMessage({ type: "error", text: "Tidak bisa terhubung ke server." });
     } finally {
       setSaving(false);
+    }
+  }
+
+  // Unduh tabel perhitungan periode yang sedang ditampilkan sebagai dokumen
+  // Word (.docx) — mengikuti pola fetch-blob-download yang sama dengan
+  // handleDownload di BuatIprClient.js (menu "Buat IPR").
+  async function handleDownload() {
+    setDownloading(true);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/penilaian-teladan/download?periode=${encodeURIComponent(periode)}`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Gagal membuat dokumen penilaian.");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Penilaian_Pegawai_Teladan_${periode.replace(/\s+/g, "_")}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setMessage({ type: "error", text: err.message || "Gagal membuat dokumen penilaian." });
+    } finally {
+      setDownloading(false);
     }
   }
 
@@ -295,6 +324,14 @@ export default function PenilaianTeladanClient() {
             <div className={styles.actionsBar}>
               <button type="button" className={styles.saveButton} onClick={handleSave} disabled={busy}>
                 {saving ? "Menyimpan..." : `Simpan Penilaian ${periode}`}
+              </button>
+              <button
+                type="button"
+                className={styles.printButton}
+                onClick={handleDownload}
+                disabled={busy || downloading}
+              >
+                {downloading ? "Membuat dokumen..." : "Cetak Perhitungan (.docx)"}
               </button>
             </div>
           </div>

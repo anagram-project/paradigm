@@ -1,19 +1,17 @@
 import { NextResponse } from "next/server";
 import { requireApiRole } from "@/lib/requireApiRole";
-import { kandidatUntukPeriode, periodeTeladanTerlaksana } from "@/lib/teladanKandidat";
-import { getPenilaianByPeriode, savePenilaianForPeriode, hitungSkorKandidat, rankByNilaiFinal } from "@/lib/penilaianTeladan";
-import { getVoteTally } from "@/lib/votingTeladan";
+import { periodeTeladanTerlaksana } from "@/lib/teladanKandidat";
+import { getPenilaianLengkap, savePenilaianForPeriode } from "@/lib/penilaianTeladan";
 
 export const runtime = "nodejs";
 
 const MENU_PATH = "/dashboard/penilaian-pegawai-teladan";
 
 // GET /api/penilaian-teladan?periode=Triwulan%20III%202026
-// Khusus Admin KKPA (lihat ADMIN_ONLY_PATHS di lib/roles.js). Menggabungkan
-// 3 sumber: daftar kandidat periode ini (lib/teladanKandidat.js), input
-// penilaian yang sudah tersimpan Admin (lib/penilaianTeladan.js), dan hasil
-// vote pegawai dari menu reguler (lib/votingTeladan.js) — lalu menghitung
-// skor & peringkat akhir di sini supaya client tinggal menampilkan.
+// Khusus Admin KKPA (lihat ADMIN_ONLY_PATHS di lib/roles.js). Penggabungan
+// kandidat + input penilaian + hasil vote, serta perhitungan skor &
+// peringkat, ada di lib/penilaianTeladan.js (getPenilaianLengkap) supaya
+// dipakai bersama dengan endpoint cetak .docx (download/route.js).
 export async function GET(request) {
   const guard = await requireApiRole(MENU_PATH);
   if (guard.response) return guard.response;
@@ -24,55 +22,9 @@ export async function GET(request) {
     return NextResponse.json({ error: "Parameter periode wajib diisi." }, { status: 400 });
   }
 
-  const kandidatList = kandidatUntukPeriode(periode);
-  if (kandidatList.length === 0) {
-    return NextResponse.json({
-      ok: true,
-      periode,
-      belumDibuka: true,
-      totalPemilih: 0,
-      rows: [],
-    });
-  }
-
   try {
-    const [inputMap, { tally, totalPemilih }] = await Promise.all([
-      getPenilaianByPeriode(periode),
-      getVoteTally({ periode }),
-    ]);
-
-    const voteTertinggi = kandidatList.reduce((max, k) => Math.max(max, tally[k.id] || 0), 0);
-
-    const rowsMentah = kandidatList.map((k) => {
-      const input = inputMap[k.id] || {};
-      const jumlahVote = tally[k.id] || 0;
-      const skor = hitungSkorKandidat({
-        kerapianBerpakaian: input.kerapianBerpakaian || 0,
-        kepatuhanJamKerja: input.kepatuhanJamKerja || 0,
-        nilaiIntegritas: input.nilaiIntegritas || 0,
-        nilaiKehadiran: input.nilaiKehadiran || 0,
-        nilaiKinerjaRaw: input.nilaiKinerjaRaw || 0,
-        jumlahVote,
-        voteTertinggi,
-      });
-      return {
-        kandidatId: k.id,
-        nama: k.namaAsli,
-        namaPanggilan: k.namaPanggilan,
-        subdit: k.subdit,
-        kerapianBerpakaian: input.kerapianBerpakaian || 0,
-        kepatuhanJamKerja: input.kepatuhanJamKerja || 0,
-        nilaiIntegritas: input.nilaiIntegritas || 0,
-        nilaiKehadiran: input.nilaiKehadiran || 0,
-        nilaiKinerjaRaw: input.nilaiKinerjaRaw || 0,
-        jumlahVote,
-        ...skor,
-      };
-    });
-
-    const rows = rankByNilaiFinal(rowsMentah).sort((a, b) => a.peringkat - b.peringkat);
-
-    return NextResponse.json({ ok: true, periode, belumDibuka: false, totalPemilih, voteTertinggi, rows });
+    const data = await getPenilaianLengkap(periode);
+    return NextResponse.json({ ok: true, ...data });
   } catch (error) {
     return NextResponse.json({ error: error.message || "Gagal memuat data penilaian." }, { status: 500 });
   }
