@@ -41,6 +41,19 @@ yarn-error.log*
 # bisa berisi data pegawai mentah.
 /scripts/output/
 
+# File laporan/deliverable yang Claude kadang simpan di folder project ini
+# (hasil export Claude Docs, file CSV/XLSX/DOCX/PDF yang dikirim lewat chat,
+# dll) — BUKAN bagian dari kode aplikasi dan beberapa bisa berisi data
+# pegawai mentah (mis. NIP, nilai kinerja). Jangan ikut ter-commit walau
+# "git add -A" dipakai. Kalau memang butuh fixture/contoh data sungguhan,
+# taruh di folder lain yang tidak kena pola di bawah.
+/Claude outputs/
+/*.xlsx
+/*.docx
+/*.pptx
+/*.pdf
+/*.csv
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

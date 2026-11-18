@@ -37,8 +37,12 @@ function getPeriodeSebelumnya(periodeLabel) {
   return `Triwulan ${ROMAN[quarterIdx]} ${year}`;
 }
 
-// 3 field narasi yang tidak boleh identik/sama persis dengan triwulan
-// sebelumnya saat disimpan (lihat cekNarasiIdentik di komponen).
+// 3 field narasi (Umpan Balik Berkelanjutan, Kendala/Hambatan dan
+// Penyebabnya, Usulan Strategi Penyelesaian) yang dirender untuk tiap baris
+// Hasil Kerja & tiap aspek Perilaku Kerja. Catatan: sebelumnya ada aturan
+// yang melarang isian ini identik/sama persis dengan triwulan sebelumnya
+// (memblokir Simpan/Unduh) — aturan itu sudah dihapus atas permintaan
+// pengguna, narasi boleh sama persis dengan periode sebelumnya.
 const NARASI_FIELDS = [
   { key: "umpanBalik", label: "Umpan Balik Berkelanjutan" },
   { key: "kendala", label: "Kendala/Hambatan dan Penyebabnya" },
@@ -47,21 +51,6 @@ const NARASI_FIELDS = [
 
 function normTeks(v) {
   return String(v || "").trim();
-}
-
-function samaPersis(a, b) {
-  const na = normTeks(a);
-  const nb = normTeks(b);
-  return na !== "" && nb !== "" && na === nb;
-}
-
-// "Tanda tangan" satu baris usulan pelatihan (dipakai untuk mendeteksi baris
-// yang persis sama dengan periode sebelumnya). Baris yang semua field-nya
-// kosong diabaikan (null) supaya tidak dianggap "identik" satu sama lain.
-function pelatihanSignature(p) {
-  const parts = [p?.topik, p?.kompetensi, p?.waktu, p?.penyelenggara].map(normTeks);
-  if (parts.every((v) => !v)) return null;
-  return parts.join("\u0001");
 }
 
 // 7 aspek BerAKHLAK (menggantikan 6 aspek penilaian lama), sesuai data
@@ -124,8 +113,8 @@ export default function BuatIprClient() {
   const [kesimpulan, setKesimpulan] = useState("");
   const [tanggalTtd, setTanggalTtd] = useState(todayIso());
 
-  // Draft triwulan sebelumnya (untuk tombol "Import Narasi" & validasi narasi
-  // identik) — null kalau belum pernah ada draft tersimpan di periode itu.
+  // Draft triwulan sebelumnya (untuk tombol "Import Narasi") — null kalau
+  // belum pernah ada draft tersimpan di periode itu.
   const periodeSebelumnya = useMemo(() => getPeriodeSebelumnya(periode), [periode]);
   const [prevDraft, setPrevDraft] = useState(null);
   const [importing, setImporting] = useState(false);
@@ -259,62 +248,14 @@ export default function BuatIprClient() {
     setPelatihan((prev) => prev.filter((r) => r.id !== id));
   }
 
-  // Lookup cepat data triwulan sebelumnya, dipakai bersama oleh tombol Import
-  // & oleh validasi "narasi identik" (cekNarasiIdentik) serta tanda peringatan
-  // inline pada tiap textarea.
+  // Lookup cepat data triwulan sebelumnya, dipakai oleh tombol "Import dari
+  // Triwulan Sebelumnya" di bawah.
   const prevHasilByNama = useMemo(() => {
     const map = new Map();
     (prevDraft?.hasilKerja || []).forEach((r) => map.set(normTeks(r.namaIki), r));
     return map;
   }, [prevDraft]);
   const prevPerilaku = prevDraft?.perilakuKerja || {};
-  const prevPelatihanSignatures = useMemo(() => {
-    const set = new Set();
-    (prevDraft?.pelatihan || []).forEach((p) => {
-      const sig = pelatihanSignature(p);
-      if (sig) set.add(sig);
-    });
-    return set;
-  }, [prevDraft]);
-
-  // Baris/field yang narasinya sama persis dengan triwulan sebelumnya — kalau
-  // ada isinya, draft TIDAK BOLEH disimpan/diunduh (lihat handleSaveDraft &
-  // handleDownload). Capaian sengaja tidak dicek, hanya 3 field narasi +
-  // Usulan Pelatihan, sesuai aturan yang diminta.
-  function cekNarasiIdentik() {
-    if (!prevDraft) return [];
-    const issues = [];
-
-    hasilKerja.forEach((r) => {
-      const match = prevHasilByNama.get(normTeks(r.namaIki));
-      if (!match) return;
-      NARASI_FIELDS.forEach(({ key, label }) => {
-        if (samaPersis(r[key], match[key])) {
-          issues.push(`Hasil Kerja "${r.namaIki}" — ${label} masih sama persis dengan ${periodeSebelumnya}.`);
-        }
-      });
-    });
-
-    ASPEK_PERILAKU.forEach((a) => {
-      const match = prevPerilaku[a.key];
-      if (!match) return;
-      const cur = perilakuKerja[a.key] || {};
-      NARASI_FIELDS.forEach(({ key, label }) => {
-        if (samaPersis(cur[key], match[key])) {
-          issues.push(`Perilaku Kerja "${a.label}" — ${label} masih sama persis dengan ${periodeSebelumnya}.`);
-        }
-      });
-    });
-
-    pelatihan.forEach((p) => {
-      const sig = pelatihanSignature(p);
-      if (sig && prevPelatihanSignatures.has(sig)) {
-        issues.push(`Usulan Pelatihan "${p.topik || "(tanpa topik)"}" masih sama persis dengan ${periodeSebelumnya}.`);
-      }
-    });
-
-    return issues;
-  }
 
   function handleImportSebelumnya() {
     if (!periodeSebelumnya) return;
@@ -326,7 +267,7 @@ export default function BuatIprClient() {
       return;
     }
     const ok = window.confirm(
-      `Salin narasi (Umpan Balik Berkelanjutan, Kendala/Hambatan dan Penyebabnya, Usulan Strategi Penyelesaian) dan Usulan Pelatihan dari ${periodeSebelumnya} ke form ini?\n\nIsian narasi yang sudah ada pada IKI/aspek yang cocok akan DITIMPA, dan baris Usulan Pelatihan dari periode sebelumnya akan ditambahkan. Anda tetap wajib menyesuaikan isinya sebelum bisa disimpan.`
+      `Salin narasi (Umpan Balik Berkelanjutan, Kendala/Hambatan dan Penyebabnya, Usulan Strategi Penyelesaian) dan Usulan Pelatihan dari ${periodeSebelumnya} ke form ini?\n\nIsian narasi yang sudah ada pada IKI/aspek yang cocok akan DITIMPA, dan baris Usulan Pelatihan dari periode sebelumnya akan ditambahkan.`
     );
     if (!ok) return;
 
@@ -376,7 +317,7 @@ export default function BuatIprClient() {
 
       setMessage({
         type: "success",
-        text: `Narasi & Usulan Pelatihan dari ${periodeSebelumnya} berhasil diimpor. Sesuaikan dulu isinya — narasi yang masih persis sama dengan ${periodeSebelumnya} tidak akan bisa disimpan.`,
+        text: `Narasi & Usulan Pelatihan dari ${periodeSebelumnya} berhasil diimpor. Silakan sesuaikan isinya sebelum disimpan.`,
       });
     } finally {
       setImporting(false);
@@ -390,7 +331,7 @@ export default function BuatIprClient() {
   // punya narasi acuan — aspek dengan nilai di rentang itu dilewati.
   function handleAutoGenerateNarasi() {
     const ok = window.confirm(
-      "Buat otomatis narasi (Umpan Balik Berkelanjutan, Kendala/Hambatan dan Penyebabnya, Usulan Strategi Penyelesaian) untuk tiap aspek Perilaku Kerja berdasarkan nilai Capaian saat ini?\n\nIsian narasi yang sudah ada akan DITIMPA. Narasi hasil generate tetap bisa Anda edit, dan tetap wajib disesuaikan kalau kebetulan sama persis dengan periode sebelumnya."
+      "Buat otomatis narasi (Umpan Balik Berkelanjutan, Kendala/Hambatan dan Penyebabnya, Usulan Strategi Penyelesaian) untuk tiap aspek Perilaku Kerja berdasarkan nilai Capaian saat ini?\n\nIsian narasi yang sudah ada akan DITIMPA. Narasi hasil generate tetap bisa Anda edit."
     );
     if (!ok) return;
 
@@ -465,22 +406,7 @@ export default function BuatIprClient() {
     [periode, identitas, tanggalTtd, hasilKerja, perilakuKerja, pelatihan, kesimpulan]
   );
 
-  function formatNarasiIdentikMessage(issues) {
-    const shown = issues.slice(0, 6);
-    const sisa = issues.length - shown.length;
-    return (
-      `Narasi/Usulan Pelatihan masih sama persis dengan periode sebelumnya — perbaiki dulu sebelum disimpan/diunduh:\n- ` +
-      shown.join("\n- ") +
-      (sisa > 0 ? `\n- ...dan ${sisa} lainnya.` : "")
-    );
-  }
-
   async function handleSaveDraft() {
-    const issues = cekNarasiIdentik();
-    if (issues.length > 0) {
-      setMessage({ type: "error", text: formatNarasiIdentikMessage(issues) });
-      return;
-    }
     setBusy(true);
     setMessage(null);
     try {
@@ -503,11 +429,6 @@ export default function BuatIprClient() {
   }
 
   async function handleDownload() {
-    const issues = cekNarasiIdentik();
-    if (issues.length > 0) {
-      setMessage({ type: "error", text: formatNarasiIdentikMessage(issues) });
-      return;
-    }
     setDownloading(true);
     setMessage(null);
     try {
@@ -660,9 +581,7 @@ export default function BuatIprClient() {
             <div className={styles.importBannerText}>
               Tombol ini menyalin narasi (Umpan Balik Berkelanjutan, Kendala/Hambatan dan Penyebabnya, Usulan
               Strategi Penyelesaian) dan Usulan Pelatihan dari <strong>{periodeSebelumnya || "periode sebelumnya"}</strong>
-              {" "}sebagai titik awal. <strong>Narasi &amp; Usulan Pelatihan yang masih persis sama</strong> dengan
-              periode sebelumnya tidak dapat disimpan atau diunduh — kolom yang terdeteksi sama akan ditandai merah
-              dan Anda wajib menyesuaikannya dulu.
+              {" "}sebagai titik awal — tetap bisa Anda sesuaikan atau biarkan apa adanya.
             </div>
             <button
               type="button"
@@ -693,7 +612,6 @@ export default function BuatIprClient() {
                   </thead>
                   <tbody>
                     {hasilKerja.map((r) => {
-                      const prevRow = prevHasilByNama.get(normTeks(r.namaIki));
                       return (
                         <tr key={r.id}>
                           <td className={styles.noIkuCell}>
@@ -721,25 +639,17 @@ export default function BuatIprClient() {
                               onChange={(e) => updateHasilKerja(r.id, { capaian: e.target.value })}
                             />
                           </td>
-                          {NARASI_FIELDS.map(({ key, label }) => {
-                            const flagged = Boolean(prevRow) && samaPersis(r[key], prevRow[key]);
-                            return (
-                              <td className={styles.narasiCell} key={key}>
-                                <textarea
-                                  className={`${styles.narasiTextarea} ${flagged ? styles.narasiTextareaFlag : ""}`}
-                                  rows={3}
-                                  placeholder="Ketik di sini..."
-                                  value={r[key]}
-                                  onChange={(e) => updateHasilKerja(r.id, { [key]: e.target.value })}
-                                />
-                                {flagged && (
-                                  <span className={styles.narasiFlagHint}>
-                                    ⚠ Sama persis dgn {periodeSebelumnya} — ubah {label.toLowerCase()} ini.
-                                  </span>
-                                )}
-                              </td>
-                            );
-                          })}
+                          {NARASI_FIELDS.map(({ key }) => (
+                            <td className={styles.narasiCell} key={key}>
+                              <textarea
+                                className={styles.narasiTextarea}
+                                rows={3}
+                                placeholder="Ketik di sini..."
+                                value={r[key]}
+                                onChange={(e) => updateHasilKerja(r.id, { [key]: e.target.value })}
+                              />
+                            </td>
+                          ))}
                           <td className={styles.iprRowDeleteCell}>
                             <button
                               type="button"
@@ -801,7 +711,6 @@ export default function BuatIprClient() {
                 </thead>
                 <tbody>
                   {ASPEK_PERILAKU.map((a) => {
-                    const prevRow = prevPerilaku[a.key];
                     const cur = perilakuKerja[a.key] || {};
                     return (
                       <tr key={a.key}>
@@ -821,25 +730,17 @@ export default function BuatIprClient() {
                             onChange={(e) => updatePerilaku(a.key, { capaian: e.target.value })}
                           />
                         </td>
-                        {NARASI_FIELDS.map(({ key, label }) => {
-                          const flagged = Boolean(prevRow) && samaPersis(cur[key], prevRow[key]);
-                          return (
-                            <td className={styles.narasiCell} key={key}>
-                              <textarea
-                                className={`${styles.narasiTextarea} ${flagged ? styles.narasiTextareaFlag : ""}`}
-                                rows={3}
-                                placeholder="Ketik di sini..."
-                                value={cur[key] || ""}
-                                onChange={(e) => updatePerilaku(a.key, { [key]: e.target.value })}
-                              />
-                              {flagged && (
-                                <span className={styles.narasiFlagHint}>
-                                  ⚠ Sama persis dgn {periodeSebelumnya} — ubah {label.toLowerCase()} ini.
-                                </span>
-                              )}
-                            </td>
-                          );
-                        })}
+                        {NARASI_FIELDS.map(({ key }) => (
+                          <td className={styles.narasiCell} key={key}>
+                            <textarea
+                              className={styles.narasiTextarea}
+                              rows={3}
+                              placeholder="Ketik di sini..."
+                              value={cur[key] || ""}
+                              onChange={(e) => updatePerilaku(a.key, { [key]: e.target.value })}
+                            />
+                          </td>
+                        ))}
                       </tr>
                     );
                   })}
@@ -865,23 +766,16 @@ export default function BuatIprClient() {
                   </thead>
                   <tbody>
                     {pelatihan.map((p) => {
-                      const sig = pelatihanSignature(p);
-                      const flagged = Boolean(sig) && prevPelatihanSignatures.has(sig);
                       return (
                       <tr key={p.id}>
                         <td>
                           <input
                             type="text"
-                            className={`${styles.cellInput} ${flagged ? styles.narasiTextareaFlag : ""}`}
+                            className={styles.cellInput}
                             style={{ minWidth: 180 }}
                             value={p.topik}
                             onChange={(e) => updatePelatihan(p.id, { topik: e.target.value })}
                           />
-                          {flagged && (
-                            <span className={styles.narasiFlagHint}>
-                              ⚠ Sama persis dgn {periodeSebelumnya}.
-                            </span>
-                          )}
                         </td>
                         <td>
                           <input
