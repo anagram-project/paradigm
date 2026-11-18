@@ -22,10 +22,19 @@ function emptyForm() {
   };
 }
 
+const TRIWULAN_OPTIONS = [
+  { value: 1, label: "Triwulan I" },
+  { value: 2, label: "Triwulan II" },
+  { value: 3, label: "Triwulan III" },
+  { value: 4, label: "Triwulan IV" },
+];
+
 export default function PengaturanClient() {
   // --- Impor Data Referensi IKI ---
   const [fileName, setFileName] = useState("");
   const [csvText, setCsvText] = useState("");
+  const [importMode, setImportMode] = useState("overwrite"); // "overwrite" | "merge-triwulan"
+  const [mergeQuarter, setMergeQuarter] = useState(3);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(null);
 
@@ -45,20 +54,30 @@ export default function PengaturanClient() {
     setBusy(true);
     setMessage(null);
     try {
+      const payload =
+        importMode === "merge-triwulan" ? { csvText, mode: "merge-triwulan", quarter: mergeQuarter } : { csvText };
       const res = await fetch("/api/pengaturan/import-referensi-iki", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ csvText }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {
         setMessage({ type: "error", text: data.error || "Gagal mengimpor data." });
         return;
       }
-      setMessage({
-        type: "success",
-        text: `Berhasil mengimpor ${data.totalBaris} baris data untuk ${data.totalPegawai} pegawai ke tab "ReferensiIKI".`,
-      });
+      if (data.mode === "merge-triwulan") {
+        const triwulanLabel = TRIWULAN_OPTIONS.find((o) => o.value === data.quarter)?.label || `Triwulan ${data.quarter}`;
+        setMessage({
+          type: "success",
+          text: `Berhasil memperbarui data ${triwulanLabel}: ${data.totalBarisDiperbarui} baris existing diperbarui, ${data.totalBarisBaru} baris baru ditambahkan (total ${data.totalBarisTotal} baris, ${data.totalPegawai} pegawai). Kolom yang disentuh: ${data.kolomDiperbarui.join(", ")}. Data triwulan lain tidak diubah.`,
+        });
+      } else {
+        setMessage({
+          type: "success",
+          text: `Berhasil mengimpor ${data.totalBaris} baris data untuk ${data.totalPegawai} pegawai ke tab "ReferensiIKI".`,
+        });
+      }
       setCsvText("");
       setFileName("");
     } catch {
@@ -222,10 +241,62 @@ export default function PengaturanClient() {
           I-IV, Realisasi TW I-IV, NPK, dan skor 7 aspek BerAKHLAK per triwulan). Data ini menjadi referensi
           otomatis untuk menu &quot;Buat IPR&quot; setiap pegawai (dicocokkan berdasarkan NIP) — mengisi otomatis
           field Capaian pada Hasil Kerja (dari Realisasi) maupun Perilaku Kerja (dari skor BerAKHLAK), yang tetap
-          bisa disesuaikan manual oleh masing-masing pegawai. Mengunggah file baru akan{" "}
-          <strong>menimpa seluruh data referensi lama</strong> — pastikan file yang diunggah adalah data terbaru
-          dan lengkap (seluruh pegawai direktorat), bukan sebagian.
+          bisa disesuaikan manual oleh masing-masing pegawai.
         </div>
+
+        <div className={styles.field}>
+          <label className={styles.fieldLabel}>Mode Impor</label>
+          <div className={styles.radioRow}>
+            <label className={styles.radioOption}>
+              <input
+                type="radio"
+                name="importMode"
+                checked={importMode === "overwrite"}
+                onChange={() => setImportMode("overwrite")}
+              />
+              <span>
+                Timpa semua data referensi lama
+                <span className={styles.radioOptionHint}>
+                  Dipakai kalau file yang diunggah sudah lengkap (seluruh pegawai &amp; seluruh triwulan yang
+                  relevan) — seluruh isi tab &quot;ReferensiIKI&quot; diganti total dengan isi file ini.
+                </span>
+              </span>
+            </label>
+            <label className={styles.radioOption}>
+              <input
+                type="radio"
+                name="importMode"
+                checked={importMode === "merge-triwulan"}
+                onChange={() => setImportMode("merge-triwulan")}
+              />
+              <span>
+                Perbarui satu triwulan saja (gabung, data lain tidak berubah)
+                <span className={styles.radioOptionHint}>
+                  Dipakai kalau file ini hanya berisi pembaruan realisasi &amp; nilai perilaku (NPK + 7 aspek
+                  BerAKHLAK) untuk SATU triwulan yang baru ditutup. Baris/kolom triwulan lain yang sudah ada di
+                  sheet dibiarkan apa adanya; baris SKP/IKI baru tetap ditambahkan.
+                </span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        {importMode === "merge-triwulan" && (
+          <div className={styles.field}>
+            <label className={styles.fieldLabel}>Triwulan yang diperbarui</label>
+            <select
+              className={styles.selectInput}
+              value={mergeQuarter}
+              onChange={(e) => setMergeQuarter(Number(e.target.value))}
+            >
+              {TRIWULAN_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div className={styles.field}>
           <label className={styles.fieldLabel}>File CSV</label>
@@ -234,7 +305,11 @@ export default function PengaturanClient() {
         </div>
 
         <button type="button" className={styles.addButton} onClick={handleImport} disabled={busy || !csvText.trim()}>
-          {busy ? "Mengimpor..." : "Impor ke ReferensiIKI"}
+          {busy
+            ? "Memproses..."
+            : importMode === "merge-triwulan"
+              ? `Perbarui Data Triwulan ${TRIWULAN_OPTIONS.find((o) => o.value === mergeQuarter)?.label.replace("Triwulan ", "") || mergeQuarter}`
+              : "Impor ke ReferensiIKI"}
         </button>
 
         {message && (
